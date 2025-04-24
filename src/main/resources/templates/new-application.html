@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Yeni Başvuru - Üniversite Dersi Seçimi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #555;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .info-message {
+            color: #d9534f;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        select:disabled, button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Pop-up Stil */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 40%;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            color: red;
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Kullanıcının rolü ve başvuru tarihleri kontrolü -->
+<input type="hidden" id="userRole" th:value="${role}"/>
+<input type="hidden" id="isApplicationPeriod" th:attr="data-application-period=${isApplicationPeriod}" />
+<input type="hidden" id="isPreviewMode" th:attr="data-preview-mode=${isPreviewMode}" />
+
+<!-- Navbar -->
+<div class="navbar">
+    <a href="/dashboard" th:if="${role == 'student' || role == 'committee'}">Dashboard</a>
+    <a href="/applications/new" th:if="${role == 'student'}" id="applyButton"
+       th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
+       th:data-preview-mode="${isPreviewMode}"
+       th:data-application-period="${isApplicationPeriod}"
+       onclick="return checkApplicationPeriod();">
+        Başvuru Yap
+    </a>
+    <a href="/applications/my-applications" th:if="${role == 'student'}">Başvurularım</a>
+    <a href="/applications/pending" th:if="${role == 'committee'}">Bekleyen Başvurular</a>
+    <a href="/applications/approved" th:if="${role == 'committee'}">Onaylanan Başvurular</a>
+    <a href="/applications/rejected" th:if="${role == 'committee'}">Reddedilen Başvurular</a>
+    <a href="/settings" th:if="${role == 'committee'}">Ayarlar</a>
+</div>
+
+<!-- Hata mesajını göster -->
+<div class="alert" th:if="${errorMessage}" id="errorAlert">
+    <span th:text="${errorMessage}"></span>
+    <span class="close-btn" onclick="closeAlert()">&times;</span>
+</div>
+
+<div class="container">
+    <h2>Yeni Başvuru - Üniversite Dersi Seçimi</h2>
+
+    <!-- Ön İzleme Modu Bilgilendirmesi -->
+    <p th:if="${isPreviewMode}" class="info-message">
+        Şu anda sadece dersleri görüntüleyebilirsiniz. Başvuru süreci henüz başlamadı.
+    </p>
+
+    <!-- Hata Mesajı İçin Pop-up -->
+    <div id="errorPopup" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <h2>Başvuru Yapılamaz!</h2>
+            <p id="errorMessage" th:text="${errorMessage}">Başvuru dönemi dışında olduğunuz için ilerleyemezsiniz.</p>
+            <button onclick="closePopup()">Tamam</button>
+        </div>
+    </div>
+
+    <!-- Ders Seçim Formu -->
+    <form th:action="@{/applications/step2}" method="post">
+        <label for="homeCourseId">Seçilen Üniversite Dersi:</label>
+        <select id="homeCourseId" name="selectedCourseId" required th:disabled="${isPreviewMode}">
+            <option value="" disabled selected>Bir ders seçin</option>
+            <option th:each="course : ${homeCourses}"
+                    th:value="${course.homeCourseId}"
+                    th:text="${course.courseName}"></option>
+        </select>
+        <br/>
+
+        <button type="submit" th:disabled="${isPreviewMode}">Devam Et</button>
+    </form>
+</div>
+
+<!-- JavaScript -->
+<script>
+    // Sayfa yüklendiğinde role kontrolü yap
+    window.onload = function () {
+        let role = document.getElementById("userRole").value;
+
+        if (role !== "student") {
+            alert("Yetkisiz erişim! Sadece öğrenciler erişebilir.");
+            window.location.href = (role === "committee") ? "/dashboard" : "/login";
+        }
+
+        let showErrorPopup = /*[[${showErrorPopup}]]*/ false;
+        if (showErrorPopup) {
+            document.getElementById("errorPopup").style.display = "block";
+        }
+
+        let isApplicationPeriod = document.getElementById("isApplicationPeriod").getAttribute("data-application-period") === "true";
+        let isPreviewMode = document.getElementById("isPreviewMode").getAttribute("data-preview-mode") === "true";
+
+        // Eğer başvuru dönemi değilse kullanıcı dashboard'a yönlendirilecek
+        if (!isApplicationPeriod && !isPreviewMode) {
+            alert("Başvuru süreci kapalı! Dashboard'a yönlendiriliyorsunuz.");
+            window.location.href = "/dashboard";
+        }
+    };
+
+    function checkApplicationPeriod(event) {
+        let isPreviewMode = /*[[${previewMode}]]*/ false;
+
+        if (isPreviewMode) {
+            event.preventDefault();
+            alert("Şu anda sadece dersleri görüntüleyebilirsiniz. Başvuru süreci henüz başlamadı.");
+        }
+    }
+
+    function closePopup() {
+        document.getElementById("errorPopup").style.display = "none";
+    }
+
+    function closeAlert() {
+        document.getElementById("errorAlert").style.display = "none";
+    }
+</script>
+
+</body>
+</html>

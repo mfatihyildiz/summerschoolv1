@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #555;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .status-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 40%;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            color: red;
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .alert {
+            background-color: #ffcccc;
+            color: #721c24;
+            padding: 15px;
+            margin: 10px auto;
+            border-radius: 5px;
+            text-align: center;
+            width: 80%;
+            display: none;
+        }
+
+        .close-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Kullanıcının rolünü saklayan gizli bir alan -->
+<input type="hidden" id="userRole" th:value="${role}"/>
+
+<!-- Navbar -->
+<div class="navbar">
+    <a href="/dashboard" th:if="${role == 'student' || role == 'committee'}">Dashboard</a>
+    <a href="/applications/new" id="applyButton" th:if="${role == 'student'}"
+       th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
+       th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
+       onclick="return checkApplicationPeriod();">
+        Başvuru Yap
+    </a>
+    <a href="/applications/my-applications" th:if="${role == 'student'}">Başvurularım</a>
+    <a href="/applications/pending" th:if="${role == 'committee'}">Bekleyen Başvurular</a>
+    <a href="/applications/approved" th:if="${role == 'committee'}">Onaylanan Başvurular</a>
+    <a href="/applications/rejected" th:if="${role == 'committee'}">Reddedilen Başvurular</a>
+    <a href="/settings" th:if="${role == 'committee'}">Ayarlar</a>
+</div>
+
+<!-- Hata mesajını göster -->
+<div class="alert" th:if="${errorMessage}" id="errorAlert">
+    <span th:text="${errorMessage}"></span>
+    <span class="close-btn" onclick="closeAlert()">&times;</span>
+</div>
+
+<!-- Dashboard İçeriği -->
+<div class="container">
+    <h1>Hoş Geldiniz, <span th:text="${fullName}"></span></h1>
+    <p>Başvurularınızı yönetebilirsiniz.</p>
+    <p class="status-info">isPreviewMode: <span th:text="${isPreviewMode}"></span></p>
+    <p class="status-info">isApplicationPeriod: <span th:text="${isApplicationPeriod}"></span></p>
+</div>
+
+<!-- Hata Mesajı İçin Pop-up -->
+<div id="errorPopup" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closePopup()">&times;</span>
+        <h2>Başvuru Yapılamaz!</h2>
+        <p id="errorMessage">Başvurular şu anda kapalıdır. Lütfen belirlenen tarihlerde tekrar deneyin.</p>
+        <button onclick="closePopup()">Tamam</button>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    function checkApplicationPeriod() {
+        let applyButton = document.getElementById("applyButton");
+
+        // Thymeleaf tarafından set edilen değerleri al
+        let isPreviewMode = applyButton.getAttribute("data-preview-mode") === "true";
+        let isApplicationPeriod = applyButton.getAttribute("data-application-period") === "true";
+
+        console.log("Kontrol - isPreviewMode:", isPreviewMode);
+        console.log("Kontrol - isApplicationPeriod:", isApplicationPeriod);
+
+        if (isApplicationPeriod || isPreviewMode) {
+            return true;
+        }
+
+        document.getElementById("errorMessage").innerText = "Başvurular şu anda kapalıdır. Lütfen belirlenen tarihlerde tekrar deneyin.";
+        document.getElementById("errorPopup").style.display = "block";
+        return false;
+    }
+
+    function closePopup() {
+        document.getElementById("errorPopup").style.display = "none";
+    }
+
+    function closeAlert() {
+        document.getElementById("errorAlert").style.display = "none";
+    }
+
+    window.onload = function () {
+        // Sayfa yüklendiğinde role kontrolü yap
+        let role = document.getElementById("userRole").value;
+
+        if (role !== "student" && role !== "committee") {
+            alert("Yetkisiz erişim! Lütfen giriş yapın.");
+            window.location.href = "/login"; // Uygun role sahip olmayanları giriş sayfasına yönlendir
+        }
+
+        // Eğer hata mesajı varsa göster
+        let alertBox = document.getElementById("errorAlert");
+        if (alertBox && alertBox.innerText.trim() !== "") {
+            alertBox.style.display = "block";
+        }
+    };
+</script>
+
+</body>
+</html>

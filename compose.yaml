@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+  postgres:
+    container_name: 'postgresummer'
+    image: 'postgres:latest'
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_DB: 'summerdb'
+      POSTGRES_PASSWORD: 'ss2025%'
+      POSTGRES_USER: 'ozmen'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - 'ssnet'
+
+  web:
+    container_name: 'summer'
+    image: 'aozmen54/summer'
+    restart: 'always'
+    build: .
+
+    ports:
+      - '8090:8090'
+    environment:
+      POSTGRES_HOST: 'postgres'
+      POSTGRES_USER: 'ozmen'
+      POSTGRES_PASSWORD: 'ss2025%'
+      POSTGRES_PORT: '5432'
+      POSTGRES_DB: 'summerdb'
+
+    networks:
+      - 'ssnet'
+    depends_on:
+      - 'postgres'
+
+networks:
+  ssnet:
+    external: true
+
+volumes:
+  postgres-data:

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Giriş Yap</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 350px;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .input-group {
+            width: 100%;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            padding-left: 5px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: calc(100% - 10px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Giriş Yap</h2>
+
+    <!-- Hata mesajını kontrol et ve göster -->
+    <div th:if="${errorMessage}" class="error-message">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <form action="/login" method="post">
+        <div class="input-group">
+            <label for="username">Kullanıcı Adı:</label>
+            <input type="text" id="username" name="username" required />
+        </div>
+
+        <div class="input-group">
+            <label for="password">Şifre:</label>
+            <input type="password" id="password" name="password" required />
+        </div>
+
+        <button type="submit">Giriş Yap</button>
+    </form>
+</div>
+
+</body>
+</html>
