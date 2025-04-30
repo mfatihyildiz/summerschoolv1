@@ -21,5 +21,4 @@ public interface UniversityRepo extends JpaRepository<University, Long> {
 
     Optional<University> findByUniversityNameAndFacultyNameAndDepartmentName(String universityName, String facultyName, String departmentName);
 
-    Optional<University> findByUniversityName(String universityName);
 }

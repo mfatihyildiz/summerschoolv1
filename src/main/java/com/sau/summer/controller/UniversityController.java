@@ -31,6 +31,13 @@ public class UniversityController {
         return universityRepo.findDistinctDepartmentsByFacultyAndUniversity(universityName, facultyName);
     }
 
+    @GetMapping("/find-id")
+    public ResponseEntity<Long> getUniversityId(final @RequestParam String universityName, final @RequestParam String facultyName, final @RequestParam String departmentName) {
+        University university = universityRepo.findByUniversityNameAndFacultyNameAndDepartmentName(universityName, facultyName, departmentName)
+                .orElseThrow(() -> new RuntimeException("University not found"));
+        return ResponseEntity.ok(university.getUniversityId());
+    }
+
     @PostMapping("/add-university")
     public ResponseEntity<String> addUniversity(@RequestBody University university) {
         try {

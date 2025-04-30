@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Giriş Yap</title>
     <style>
@@ -81,6 +81,20 @@
     <div th:if="${errorMessage}" class="error-message">
         <p th:text="${errorMessage}"></p>
     </div>
+
+    <!--<form action="/login" method="post">
+        <div class="input-group">
+            <label for="username">Kullanıcı Adı:</label>
+            <input type="text" id="username" name="username" required />
+        </div>
+
+        <div class="input-group">
+            <label for="password">Şifre:</label>
+            <input type="password" id="password" name="password" required />
+        </div>
+
+        <button type="submit">Giriş Yap</button>
+    </form>-->
 
     <form action="/login" method="post">
         <div class="input-group">

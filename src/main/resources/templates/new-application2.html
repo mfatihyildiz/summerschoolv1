@@ -138,19 +138,19 @@
 
 <!-- Navbar -->
 <div class="navbar">
-    <a href="/dashboard" th:if="${role == 'student' || role == 'committee'}">Dashboard</a>
-    <a href="/applications/new" th:if="${role == 'student'}" id="applyButton"
+    <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE'}">Dashboard</a>
+    <a href="/applications/new" th:if="${role == 'STUDENT'}" id="applyButton"
        th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
        th:data-preview-mode="${isPreviewMode}"
        th:data-application-period="${isApplicationPeriod}"
        onclick="return checkApplicationPeriod();">
         Başvuru Yap
     </a>
-    <a href="/applications/my-applications" th:if="${role == 'student'}">Başvurularım</a>
-    <a href="/applications/pending" th:if="${role == 'committee'}">Bekleyen Başvurular</a>
-    <a href="/applications/approved" th:if="${role == 'committee'}">Onaylanan Başvurular</a>
-    <a href="/applications/rejected" th:if="${role == 'committee'}">Reddedilen Başvurular</a>
-    <a href="/settings" th:if="${role == 'committee'}">Ayarlar</a>
+    <a href="/applications/my-applications" th:if="${role == 'STUDENT'}">Başvurularım</a>
+    <a href="/applications/pending" th:if="${role == 'COMMITTEE'}">Bekleyen Başvurular</a>
+    <a href="/applications/approved" th:if="${role == 'COMMITTEE'}">Onaylanan Başvurular</a>
+    <a href="/applications/rejected" th:if="${role == 'COMMITTEE'}">Reddedilen Başvurular</a>
+    <a href="/settings" th:if="${role == 'COMMITTEE'}">Ayarlar</a>
 </div>
 
 <!-- Hata mesajını göster -->
@@ -424,7 +424,7 @@
         }
 
         // University ID'yi al
-        const responseUniversity = await fetch(`/university/find-id?universityName=${encodeURIComponent(universityName)}`);
+        const responseUniversity = await fetch(`/university/find-id?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}`);
         const universityId = responseUniversity.ok ? await responseUniversity.json() : null;
         alert(universityId);
 
@@ -560,9 +560,9 @@
     window.onload = function () {
         let role = document.getElementById("userRole").value;
 
-        if (role !== "student") {
+        if (role !== "STUDENT") {
             alert("Yetkisiz erişim! Sadece öğrenciler erişebilir.");
-            window.location.href = (role === "committee") ? "/dashboard" : "/login";
+            window.location.href = (role === "COMMITTEE") ? "/dashboard" : "/login";
         }
 
         let showErrorPopup = /*[[${showErrorPopup}]]*/ false;
@@ -595,4 +595,3 @@
 </script>
 </body>
 </html>
-

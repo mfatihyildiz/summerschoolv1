@@ -117,18 +117,18 @@
 
 <!-- Navbar -->
 <div class="navbar">
-    <a href="/dashboard" th:if="${role == 'student' || role == 'committee'}">Dashboard</a>
-    <a href="/applications/new" id="applyButton" th:if="${role == 'student'}"
+    <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE'}">Dashboard</a>
+    <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT'}"
        th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
        th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
        onclick="return checkApplicationPeriod();">
         Başvuru Yap
     </a>
-    <a href="/applications/my-applications" th:if="${role == 'student'}">Başvurularım</a>
-    <a href="/applications/pending" th:if="${role == 'committee'}">Bekleyen Başvurular</a>
-    <a href="/applications/approved" th:if="${role == 'committee'}">Onaylanan Başvurular</a>
-    <a href="/applications/rejected" th:if="${role == 'committee'}">Reddedilen Başvurular</a>
-    <a href="/settings" th:if="${role == 'committee'}">Ayarlar</a>
+    <a href="/applications/my-applications" th:if="${role == 'STUDENT'}">Başvurularım</a>
+    <a href="/applications/pending" th:if="${role == 'COMMITTEE'}">Bekleyen Başvurular</a>
+    <a href="/applications/approved" th:if="${role == 'COMMITTEE'}">Onaylanan Başvurular</a>
+    <a href="/applications/rejected" th:if="${role == 'COMMITTEE'}">Reddedilen Başvurular</a>
+    <a href="/settings" th:if="${role == 'COMMITTEE'}">Ayarlar</a>
 </div>
 
 <!-- Hata mesajını göster -->
@@ -223,6 +223,9 @@
             <label for="committeeSurname">Soyad</label>
             <input type="text" id="committeeSurname" name="surname" placeholder="Soyad" required>
 
+            <label for="committeeUsername">Kullanıcı Adı (Username)</label>
+            <input type="text" id="committeeUsername" name="username" placeholder="Username" required autocomplete="off">
+
             <label for="committeeEmail">Email</label>
             <input type="email" id="committeeEmail" name="email" placeholder="Email" required>
 
@@ -264,10 +267,10 @@
             </tbody>
         </table>
 
-        <!-- 📌 Yeni Application Period Ekleme Butonu -->
+        <!-- Yeni Application Period Ekleme Butonu -->
         <button onclick="toggleAddForm()" class="edit-btn">➕ Yeni Başvuru Dönemi Ekle</button>
 
-        <!-- 📌 Application Period Ekleme Formu (Başlangıçta Gizli) -->
+        <!-- Application Period Ekleme Formu (Başlangıçta Gizli) -->
         <div id="addPeriodForm" style="display: none; margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
             <h3>Yeni Başvuru Dönemi Ekle</h3>
             <form action="/settings/update-period" method="post">
@@ -544,9 +547,9 @@
     window.onload = function () {
         let role = document.getElementById("userRole").value;
 
-        if (role !== "committee") {
+        if (role !== "COMMITTEE") {
             alert("Yetkisiz erişim! Sadece öğrenciler erişebilir.");
-            window.location.href = (role === "student") ? "/dashboard" : "/login";
+            window.location.href = (role === "STUDENT") ? "/dashboard" : "/login";
         }
 
         let showErrorPopup = /*[[${showErrorPopup}]]*/ false;

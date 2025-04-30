@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Dashboard</title>
     <style>
@@ -115,24 +115,23 @@
     </style>
 </head>
 <body>
-
 <!-- Kullanıcının rolünü saklayan gizli bir alan -->
 <input type="hidden" id="userRole" th:value="${role}"/>
 
 <!-- Navbar -->
 <div class="navbar">
-    <a href="/dashboard" th:if="${role == 'student' || role == 'committee'}">Dashboard</a>
-    <a href="/applications/new" id="applyButton" th:if="${role == 'student'}"
+    <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE'}">Dashboard</a>
+    <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT'}"
        th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
        th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
        onclick="return checkApplicationPeriod();">
         Başvuru Yap
     </a>
-    <a href="/applications/my-applications" th:if="${role == 'student'}">Başvurularım</a>
-    <a href="/applications/pending" th:if="${role == 'committee'}">Bekleyen Başvurular</a>
-    <a href="/applications/approved" th:if="${role == 'committee'}">Onaylanan Başvurular</a>
-    <a href="/applications/rejected" th:if="${role == 'committee'}">Reddedilen Başvurular</a>
-    <a href="/settings" th:if="${role == 'committee'}">Ayarlar</a>
+    <a href="/applications/my-applications" th:if="${role == 'STUDENT'}">Başvurularım</a>
+    <a href="/applications/pending" th:if="${role == 'COMMITTEE'}">Bekleyen Başvurular</a>
+    <a href="/applications/approved" th:if="${role == 'COMMITTEE'}">Onaylanan Başvurular</a>
+    <a href="/applications/rejected" th:if="${role == 'COMMITTEE'}">Reddedilen Başvurular</a>
+    <a href="/settings" th:if="${role == 'COMMITTEE'}">Ayarlar</a>
 </div>
 
 <!-- Hata mesajını göster -->
@@ -164,7 +163,6 @@
     function checkApplicationPeriod() {
         let applyButton = document.getElementById("applyButton");
 
-        // Thymeleaf tarafından set edilen değerleri al
         let isPreviewMode = applyButton.getAttribute("data-preview-mode") === "true";
         let isApplicationPeriod = applyButton.getAttribute("data-application-period") === "true";
 
@@ -189,15 +187,13 @@
     }
 
     window.onload = function () {
-        // Sayfa yüklendiğinde role kontrolü yap
         let role = document.getElementById("userRole").value;
 
-        if (role !== "student" && role !== "committee") {
+        if (role !== "STUDENT" && role !== "COMMITTEE") {
             alert("Yetkisiz erişim! Lütfen giriş yapın.");
-            window.location.href = "/login"; // Uygun role sahip olmayanları giriş sayfasına yönlendir
+            window.location.href = "/login";
         }
 
-        // Eğer hata mesajı varsa göster
         let alertBox = document.getElementById("errorAlert");
         if (alertBox && alertBox.innerText.trim() !== "") {
             alertBox.style.display = "block";

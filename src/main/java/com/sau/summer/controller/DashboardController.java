@@ -26,7 +26,9 @@ public class DashboardController {
             return "redirect:/login";
         }
 
-        if (("student".equals(role) && session.getAttribute("student") != null) || ("committee".equals(role) && session.getAttribute("committee") != null)) {
+        if (("STUDENT".equals(role) && session.getAttribute("student") != null) ||
+                ("COMMITTEE".equals(role) && session.getAttribute("committee") != null)) {
+            // her şey doğru
             return null;
         }
 
@@ -43,18 +45,18 @@ public class DashboardController {
         String role = (String) session.getAttribute("role");
         String fullName = "Bilinmeyen Kullanıcı";
 
-        if ("student".equals(role)) {
+        if ("STUDENT".equals(role)) {
             Student student = (Student) session.getAttribute("student");
             if (student != null) {
                 fullName = student.getName() + " " + student.getSurname();
             }
-            model.addAttribute("role", "student");
-        } else if ("committee".equals(role)) {
+            model.addAttribute("role", "STUDENT"); // model'a yine String gönderiyoruz
+        } else if ("COMMITTEE".equals(role)) {
             Committee committee = (Committee) session.getAttribute("committee");
             if (committee != null) {
                 fullName = committee.getName() + " " + committee.getSurname();
             }
-            model.addAttribute("role", "committee");
+            model.addAttribute("role", "COMMITTEE"); // model'a yine String gönderiyoruz
         }
 
         boolean isPreviewMode = applicationPeriodService.isPreviewOpen();

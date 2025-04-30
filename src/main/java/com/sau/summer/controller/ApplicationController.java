@@ -30,36 +30,39 @@ public class ApplicationController {
     @Autowired
     private ApplicationPeriodService applicationPeriodService;
 
-    private String checkStudentAccess(final HttpSession session, final RedirectAttributes redirectAttributes)   {
+    private String checkStudentAccess(final HttpSession session, final RedirectAttributes redirectAttributes) {
         String role = (String) session.getAttribute("role");
 
-        if ("student".equals(role) && session.getAttribute("student") != null) {
-            return null; // Öğrenci erişebilir, yönlendirme yok
+        if (role == null) {
+            session.invalidate();
+            redirectAttributes.addFlashAttribute("errorMessage", "Oturumunuz sona erdi, lütfen tekrar giriş yapın.");
+            return "redirect:/login";
         }
 
-        if ("committee".equals(role)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Öğrenci yetkisi gereklidir.");
-            return "redirect:/dashboard";
+        if ("STUDENT".equals(role) && session.getAttribute("student") != null) {
+            return null;
         }
 
-        redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Lütfen tekrar giriş yapın.");
-        return "redirect:/login";
+        // Öğrenci değilse yetkisiz erişim
+        redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Sadece öğrenciler erişebilir.");
+        return "redirect:/dashboard";
     }
-
     private String checkCommitteeAccess(final HttpSession session, final RedirectAttributes redirectAttributes) {
         String role = (String) session.getAttribute("role");
 
-        if ("committee".equals(role) && session.getAttribute("committee") != null) {
-            return null; // Komite erişebilir, yönlendirme yok
+        if (role == null) {
+            session.invalidate();
+            redirectAttributes.addFlashAttribute("errorMessage", "Oturumunuz sona erdi, lütfen tekrar giriş yapın.");
+            return "redirect:/login";
         }
 
-        if ("student".equals(role)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Komite yetkisi gereklidir.");
-            return "redirect:/dashboard";
+        if ("COMMITTEE".equals(role) && session.getAttribute("committee") != null) {
+            return null;
         }
 
-        redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Lütfen tekrar giriş yapın.");
-        return "redirect:/login";
+        // Komite değilse yetkisiz erişim
+        redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Sadece komite üyeleri erişebilir.");
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/new")
@@ -386,7 +389,7 @@ public class ApplicationController {
             applicationRepo.save(application);
         }
 
-        return "redirect:/applications/approved"; // ✅ Onaylı başvurular sayfasına geri dön
+        return "redirect:/applications/approved"; // Onaylanan başvurular sayfasına geri dön
     }
 
     @PostMapping("/approve-rejected/{id}")
@@ -406,6 +409,6 @@ public class ApplicationController {
         application.setStatus(ApplicationStatus.APPROVED);
         applicationRepo.save(application);
 
-        return "redirect:/applications/rejected"; // ✅ Reddedilen başvurular sayfasına geri dön
+        return "redirect:/applications/rejected"; //Reddedilen başvurular sayfasına geri dön
     }
 }

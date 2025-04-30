@@ -1,5 +1,6 @@
 package com.sau.summer.entity;
 
+import com.sau.summer.enums.Role;
 import com.sau.summer.enums.Semester;
 import com.sau.summer.enums.EducationYear;
 import jakarta.persistence.*;
@@ -27,6 +28,19 @@ public class Student {
     private EducationYear educationYear;
     private String year;
     private double gpa;
+
+    @Column(unique = true)
+    private String username;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.STUDENT;
+
+    @Column(nullable = false)
+    private boolean isLocked = false;
+
+    @Column(nullable = false)
+    private boolean isDisabled = false;
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<ExternalCourse> externalCourses;
@@ -108,5 +122,37 @@ public class Student {
 
     public void setYear(String year) {
         this.year = year;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        isLocked = locked;
+    }
+
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        isDisabled = disabled;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

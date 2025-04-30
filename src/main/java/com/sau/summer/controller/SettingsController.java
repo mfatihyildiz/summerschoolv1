@@ -3,11 +3,13 @@ package com.sau.summer.controller;
 import com.sau.summer.entity.*;
 import com.sau.summer.enums.EducationYear;
 import com.sau.summer.enums.Language;
+import com.sau.summer.enums.Role;
 import com.sau.summer.enums.Semester;
 import com.sau.summer.repository.*;
 import com.sau.summer.service.ApplicationPeriodService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +42,8 @@ public class SettingsController {
     private UniversityRepo universityRepo;
     @Autowired
     private ApplicationPeriodService applicationPeriodService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
@@ -47,7 +51,7 @@ public class SettingsController {
     private String checkCommitteeAccess(HttpSession session, RedirectAttributes redirectAttributes) {
         String role = (String) session.getAttribute("role");
 
-        if ("committee".equals(role)) {
+        if (Role.COMMITTEE.name().equals(role)) {
             Committee committee = (Committee) session.getAttribute("committee");
             if (committee != null) {
                 return null; // ✅ Komite erişebilir, yönlendirme yok
@@ -57,7 +61,7 @@ public class SettingsController {
             return "redirect:/login";
         }
 
-        if ("student".equals(role)) {
+        if (Role.STUDENT.name().equals(role)) {
             redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Komite yetkisi gereklidir.");
             return "redirect:/dashboard";
         }
@@ -205,7 +209,7 @@ public class SettingsController {
     // **Ekleme İşlemleri (Sadece Komite Yetkisiyle)**
     @PostMapping("/add-committee")
     public String addCommittee(@RequestParam final String name, @RequestParam final String surname, @RequestParam final String email, @RequestParam final String password,
-                               final HttpSession session, final RedirectAttributes redirectAttributes) {
+                               @RequestParam final String username, final HttpSession session, final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
         if (redirect != null) {
             return redirect;
@@ -214,8 +218,9 @@ public class SettingsController {
         Committee committee = new Committee();
         committee.setName(name);
         committee.setSurname(surname);
+        committee.setUsername(username);
         committee.setEmail(email);
-        committee.setPassword(password);
+        committee.setPassword(passwordEncoder.encode(password));
         committeeRepo.save(committee);
         return "redirect:/settings";
     }
@@ -232,10 +237,11 @@ public class SettingsController {
 
         Student student = new Student();
         student.setStudentNumber(studentNumber);
+        student.setUsername(studentNumber);
         student.setName(name);
         student.setSurname(surname);
         student.setEmail(email);
-        student.setPassword(password);
+        student.setPassword(passwordEncoder.encode(password));
         student.setSemester(semester);
         student.setEducationYear(educationYear);
         student.setYear(year);

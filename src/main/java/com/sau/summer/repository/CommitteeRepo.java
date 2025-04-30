@@ -7,7 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CommitteeRepo extends JpaRepository<Committee, Long> {
 
-    Committee findByEmail(String email);
-
-    Committee findByEmailAndPassword(String Email, String password);
+    Committee findByUsername(String username);
 }

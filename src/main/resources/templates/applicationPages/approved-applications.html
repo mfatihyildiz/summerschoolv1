@@ -186,18 +186,18 @@
 
 <!-- Navbar -->
 <div class="navbar">
-    <a href="/dashboard" th:if="${role == 'student' || role == 'committee'}">Dashboard</a>
-    <a href="/applications/new" id="applyButton" th:if="${role == 'student'}"
+    <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE'}">Dashboard</a>
+    <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT'}"
        th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
        th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
        onclick="return checkApplicationPeriod();">
         Başvuru Yap
     </a>
-    <a href="/applications/my-applications" th:if="${role == 'student'}">Başvurularım</a>
-    <a href="/applications/pending" th:if="${role == 'committee'}">Bekleyen Başvurular</a>
-    <a href="/applications/approved" th:if="${role == 'committee'}">Onaylanan Başvurular</a>
-    <a href="/applications/rejected" th:if="${role == 'committee'}">Reddedilen Başvurular</a>
-    <a href="/settings" th:if="${role == 'committee'}">Ayarlar</a>
+    <a href="/applications/my-applications" th:if="${role == 'STUDENT'}">Başvurularım</a>
+    <a href="/applications/pending" th:if="${role == 'COMMITTEE'}">Bekleyen Başvurular</a>
+    <a href="/applications/approved" th:if="${role == 'COMMITTEE'}">Onaylanan Başvurular</a>
+    <a href="/applications/rejected" th:if="${role == 'COMMITTEE'}">Reddedilen Başvurular</a>
+    <a href="/settings" th:if="${role == 'COMMITTEE'}">Ayarlar</a>
 </div>
 
 <!-- Hata mesajını göster -->
@@ -374,9 +374,9 @@
     window.onload = function () {
         let role = document.getElementById("userRole").value;
 
-        if (role !== "committee") {
-            alert("Yetkisiz erişim! Sadece öğrenciler erişebilir.");
-            window.location.href = (role === "student") ? "/dashboard" : "/login";
+        if (role !== "COMMITTEE") {
+            alert("Yetkisiz erişim! Sadece komite üyeleri erişebilir.");
+            window.location.href = (role === "STUDENT") ? "/dashboard" : "/login";
         }
 
         let showErrorPopup = /*[[${showErrorPopup}]]*/ false;
