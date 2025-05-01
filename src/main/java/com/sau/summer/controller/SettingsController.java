@@ -51,10 +51,10 @@ public class SettingsController {
     private String checkCommitteeAccess(HttpSession session, RedirectAttributes redirectAttributes) {
         String role = (String) session.getAttribute("role");
 
-        if (Role.COMMITTEE.name().equals(role)) {
+        if (Role.COMMITTEE.name().equals(role) || Role.ADMIN.name().equals(role)) {
             Committee committee = (Committee) session.getAttribute("committee");
             if (committee != null) {
-                return null; // ✅ Komite erişebilir, yönlendirme yok
+                return null; // Komite erişebilir, yönlendirme yok
             }
             session.invalidate();
             redirectAttributes.addFlashAttribute("errorMessage", "Komite üyesi bilgisi bulunamadı! Lütfen tekrar giriş yapın.");
@@ -110,7 +110,7 @@ public class SettingsController {
                                           final HttpSession session, final Model model, final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
         if (redirect != null) {
-            return redirect; // ✅ Eğer yönlendirme gerekiyorsa, direkt yönlendir
+            return redirect;
         }
 
         try {
@@ -270,6 +270,38 @@ public class SettingsController {
         course.setEducationYear(educationYear);
         course.setDescription(description);
         homeCourseRepo.save(course);
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/lock-student")
+    public String lockOrUnlockStudentfinal (@RequestParam("id") Long studentId, final HttpSession session, final RedirectAttributes redirectAttributes) {
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim!");
+            return "redirect:/dashboard";
+        }
+
+        Student student = studentRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı."));
+
+        student.setLocked(!student.isLocked()); // toggle işlemi
+        studentRepo.save(student);
+        return "redirect:/settings";
+    }
+
+    @PostMapping("/disable-student")
+    public String disableOrEnableStudent(final @RequestParam("id") Long studentId, final HttpSession session, final RedirectAttributes redirectAttributes) {
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim!");
+            return "redirect:/dashboard";
+        }
+
+        Student student = studentRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı."));
+
+        student.setDisabled(!student.isDisabled()); // toggle işlemi
+        studentRepo.save(student);
         return "redirect:/settings";
     }
 }

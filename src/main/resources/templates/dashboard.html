@@ -120,18 +120,18 @@
 
 <!-- Navbar -->
 <div class="navbar">
-    <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE'}">Dashboard</a>
-    <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT'}"
+    <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE' || role == 'ADMIN'}">Dashboard</a>
+    <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT' || role == 'ADMIN'}"
        th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
        th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
        onclick="return checkApplicationPeriod();">
         Başvuru Yap
     </a>
-    <a href="/applications/my-applications" th:if="${role == 'STUDENT'}">Başvurularım</a>
-    <a href="/applications/pending" th:if="${role == 'COMMITTEE'}">Bekleyen Başvurular</a>
-    <a href="/applications/approved" th:if="${role == 'COMMITTEE'}">Onaylanan Başvurular</a>
-    <a href="/applications/rejected" th:if="${role == 'COMMITTEE'}">Reddedilen Başvurular</a>
-    <a href="/settings" th:if="${role == 'COMMITTEE'}">Ayarlar</a>
+    <a href="/applications/my-applications" th:if="${role == 'STUDENT' || role == 'ADMIN'}">Başvurularım</a>
+    <a href="/applications/pending" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Bekleyen Başvurular</a>
+    <a href="/applications/approved" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Onaylanan Başvurular</a>
+    <a href="/applications/rejected" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Reddedilen Başvurular</a>
+    <a href="/settings" th:if="${role == 'COMMITTEE'|| role == 'ADMIN'}">Ayarlar</a>
 </div>
 
 <!-- Hata mesajını göster -->
@@ -158,7 +158,6 @@
     </div>
 </div>
 
-<!-- JavaScript -->
 <script>
     function checkApplicationPeriod() {
         let applyButton = document.getElementById("applyButton");
@@ -189,7 +188,7 @@
     window.onload = function () {
         let role = document.getElementById("userRole").value;
 
-        if (role !== "STUDENT" && role !== "COMMITTEE") {
+        if (!role || (role !== "STUDENT" && role !== "COMMITTEE" && role !== "ADMIN")) {
             alert("Yetkisiz erişim! Lütfen giriş yapın.");
             window.location.href = "/login";
         }

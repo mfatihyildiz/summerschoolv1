@@ -39,14 +39,14 @@ public class ApplicationController {
             return "redirect:/login";
         }
 
-        if ("STUDENT".equals(role) && session.getAttribute("student") != null) {
-            return null;
+        if (("STUDENT".equals(role) && session.getAttribute("student") != null) || "ADMIN".equals(role)) {
+            return null; // Öğrenci ya da Admin ise erişim serbest
         }
 
-        // Öğrenci değilse yetkisiz erişim
         redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Sadece öğrenciler erişebilir.");
         return "redirect:/dashboard";
     }
+
     private String checkCommitteeAccess(final HttpSession session, final RedirectAttributes redirectAttributes) {
         String role = (String) session.getAttribute("role");
 
@@ -56,11 +56,10 @@ public class ApplicationController {
             return "redirect:/login";
         }
 
-        if ("COMMITTEE".equals(role) && session.getAttribute("committee") != null) {
-            return null;
+        if (("COMMITTEE".equals(role) && session.getAttribute("committee") != null) || "ADMIN".equals(role)) {
+            return null; // Komite ya da Admin ise erişim serbest
         }
 
-        // Komite değilse yetkisiz erişim
         redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim! Sadece komite üyeleri erişebilir.");
         return "redirect:/dashboard";
     }

@@ -27,8 +27,7 @@ public class DashboardController {
         }
 
         if (("STUDENT".equals(role) && session.getAttribute("student") != null) ||
-                ("COMMITTEE".equals(role) && session.getAttribute("committee") != null)) {
-            // her şey doğru
+                (("COMMITTEE".equals(role) || "ADMIN".equals(role)) && session.getAttribute("committee") != null)) {
             return null;
         }
 
@@ -50,13 +49,19 @@ public class DashboardController {
             if (student != null) {
                 fullName = student.getName() + " " + student.getSurname();
             }
-            model.addAttribute("role", "STUDENT"); // model'a yine String gönderiyoruz
+            model.addAttribute("role", "STUDENT");
         } else if ("COMMITTEE".equals(role)) {
             Committee committee = (Committee) session.getAttribute("committee");
             if (committee != null) {
                 fullName = committee.getName() + " " + committee.getSurname();
             }
-            model.addAttribute("role", "COMMITTEE"); // model'a yine String gönderiyoruz
+            model.addAttribute("role", "COMMITTEE");
+        } else if ("ADMIN".equals(role)) {
+            Committee committee = (Committee) session.getAttribute("committee");
+            if (committee != null) {
+                fullName = committee.getName() + " " + committee.getSurname();
+            }
+            model.addAttribute("role", "ADMIN");
         }
 
         boolean isPreviewMode = applicationPeriodService.isPreviewOpen();

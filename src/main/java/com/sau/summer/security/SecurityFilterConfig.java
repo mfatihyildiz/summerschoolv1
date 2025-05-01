@@ -33,7 +33,7 @@ public class SecurityFilterConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/error").permitAll()
-                        .requestMatchers("/dashboard", "/applications/**", "/settings/**", "/external/**","/university/**").hasAnyRole(Role.STUDENT.name(), Role.COMMITTEE.name())
+                        .requestMatchers("/dashboard", "/applications/**", "/settings/**", "/external/**", "/university/**").hasAnyRole(Role.STUDENT.name(), Role.COMMITTEE.name(), Role.ADMIN.name())
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)
@@ -70,6 +70,8 @@ public class SecurityFilterConfig {
             if ("STUDENT".equals(role)) {
                 studentRepo.findById(id).ifPresent(student -> session.setAttribute("student", student));
             } else if ("COMMITTEE".equals(role)) {
+                committeeRepo.findById(id).ifPresent(committee -> session.setAttribute("committee", committee));
+            } else if ("ADMIN".equals(role)) {
                 committeeRepo.findById(id).ifPresent(committee -> session.setAttribute("committee", committee));
             }
 
