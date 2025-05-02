@@ -181,7 +181,7 @@
     window.onload = function () {
         let role = document.getElementById("userRole").value;
 
-        if (role !== "STUDENT" || role!== "ADMIN") {
+        if (role !== "STUDENT" && role!== "ADMIN") {
             alert("Yetkisiz erişim! Sadece öğrenciler erişebilir.");
             window.location.href = (role === "COMMITTEE") ? "/dashboard" : "/login";
         }

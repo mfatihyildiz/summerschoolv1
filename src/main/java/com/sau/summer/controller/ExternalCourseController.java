@@ -11,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -26,7 +28,7 @@ public class ExternalCourseController {
     @GetMapping("/external-course-id")
     public ResponseEntity<Long> getExternalCourseId(final @RequestParam String universityName, final @RequestParam String facultyName,
                                                     final @RequestParam String departmentName, final @RequestParam String courseName) {
-        Optional<Long> externalCourseId = externalCourseRepo.findExternalCourseId(universityName, facultyName, departmentName, courseName);
+        Optional<Long> externalCourseId = externalCourseRepo.findActiveExternalCourseId(universityName, facultyName, departmentName, courseName);
 
         return externalCourseId.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
@@ -36,7 +38,6 @@ public class ExternalCourseController {
     public ResponseEntity<List<String>> getCoursesByUniversityDetails(final @RequestParam String universityName, final @RequestParam String facultyName,
                                                                       final @RequestParam String departmentName) {
 
-        // University tablosunda sorgu yaparak universityId'yi bul
         Optional<University> optionalUniversity = universityRepo.findByUniversityNameAndFacultyNameAndDepartmentName(
                 universityName, facultyName, departmentName
         );
@@ -44,15 +45,10 @@ public class ExternalCourseController {
         University university = optionalUniversity.orElseThrow(() ->
                 new RuntimeException("Belirtilen üniversite, fakülte ve bölüm bilgileri bulunamadı."));
 
-        if (university == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of("Üniversite bilgilerine uygun kayıt bulunamadı."));
-        }
-
-        // ExternalCourse tablosunda universityId ile sorgu yaparak courseName'leri al
-        List<String> courseNames = externalCourseRepo.findCourseNamesByUniversityId(university.getUniversityId());
+        List<String> courseNames = externalCourseRepo.findActiveCourseNamesByUniversityId(university.getUniversityId());
 
         if (courseNames.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of("Seçilen bilgilere uygun ders bulunamadı."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of("Seçilen bilgilere uygun aktif ders bulunamadı."));
         }
 
         return ResponseEntity.ok(courseNames);
@@ -82,5 +78,65 @@ public class ExternalCourseController {
         externalCourseRepo.save(externalCourse);
 
         return ResponseEntity.ok("Ders başarıyla eklendi!");
+    }
+
+    @GetMapping("/check-duplicate-course")
+    @ResponseBody
+    public boolean checkDuplicateExternalCourse(final @RequestParam String universityName, final @RequestParam String facultyName,
+            final @RequestParam String departmentName, final @RequestParam String courseName) {
+
+        // Önce üniversiteyi bul
+        Optional<University> universityOpt = universityRepo.findByUniversityNameAndFacultyNameAndDepartmentName(
+                universityName, facultyName, departmentName
+        );
+
+        if (universityOpt.isEmpty()) {
+            return false; // Üniversite yoksa zaten ders de yok demektir
+        }
+
+        University university = universityOpt.get();
+
+        // Sonra aynı university_id ve course_name olan external course var mı kontrol et
+        Optional<ExternalCourse> externalCourseOpt = externalCourseRepo.findByUniversityIdAndCourseName(
+                university.getUniversityId(), courseName
+        );
+
+        return externalCourseOpt.isPresent(); // true: zaten var, false: eklenebilir
+    }
+
+    @PutMapping("/deactivate-course")
+    @ResponseBody
+    public String deactivateCourse(@RequestParam Long universityId, @RequestParam String courseName) {
+        Optional<ExternalCourse> courseOpt = externalCourseRepo.findByUniversityIdAndCourseName(universityId, courseName);
+
+        if (courseOpt.isPresent()) {
+            ExternalCourse course = courseOpt.get();
+            course.setIsActive(false);
+            externalCourseRepo.save(course);
+            return "Başarılı";
+        } else {
+            return "Hata: Ders bulunamadı.";
+        }
+    }
+
+    @GetMapping("/get-course-details")
+    @ResponseBody
+    public Map<String, Object> getCourseDetails(@RequestParam Long id) {
+        ExternalCourse course = externalCourseRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("External Course bulunamadı."));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", course.getExternalCourseId());
+        response.put("courseName", course.getCourseName());
+        response.put("universityName", course.getUniversity().getUniversityName());
+        response.put("facultyName", course.getUniversity().getFacultyName());
+        response.put("departmentName", course.getUniversity().getDepartmentName());
+        response.put("ects", course.getEcts());
+        response.put("language", course.getLanguage());
+        response.put("theoreticalHours", course.getTheoreticalHours());
+        response.put("practicalHours", course.getPracticalHours());
+        response.put("description", course.getDescription());
+
+        return response;
     }
 }

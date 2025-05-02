@@ -241,6 +241,8 @@
         </div>
 
         <button type="button" onclick="addNewCourse()">Dersi Ekle</button>
+        <button type="button" onclick="populateEditForm()">Dersi Düzenle</button>
+        <button type="button" id="saveEditedCourseButton" style="display:none;" onclick="saveEditedCourse()">Güncellenmiş Dersi Kaydet</button>
         <button type="button" class="cancel-btn"
                 onclick="document.getElementById('addCourseForm').style.display='none'">İptal
         </button>
@@ -426,10 +428,19 @@
             return;
         }
 
-        // University ID'yi al
+        // Önce aynı ders var mı kontrolü yap
+        const duplicateCheckUrl = `/external/check-duplicate-course?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}&courseName=${encodeURIComponent(courseName)}`;
+        const duplicateResponse = await fetch(duplicateCheckUrl);
+        const isDuplicate = await duplicateResponse.json();
+
+        if (isDuplicate) {
+            alert("Bu ders zaten sistemde kayıtlı! Lütfen mevcut dersi güncelleyin.");
+            return; // Eğer varsa işlem durduruluyor
+        }
+
+        // Eğer duplicate yoksa normal ders ekleme devam ediyor:
         const responseUniversity = await fetch(`/university/find-id?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}`);
         const universityId = responseUniversity.ok ? await responseUniversity.json() : null;
-        alert(universityId);
 
         if (!universityId) {
             alert("Üniversite bulunamadı!");
@@ -594,6 +605,133 @@
 
     function closeAlert() {
         document.getElementById("errorAlert").style.display = "none";
+    }
+
+    async function populateEditForm() {
+        const universityName = document.getElementById('universityName').value.trim();
+        const facultyName = document.getElementById('facultyName').value.trim();
+        const departmentName = document.getElementById('departmentName').value.trim();
+        const courseName = document.getElementById('courseName').value.trim();
+
+        if (!universityName || !facultyName || !departmentName || !courseName) {
+            alert("Lütfen tüm seçimleri yapın.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/applications/external-course-id?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}&courseName=${encodeURIComponent(courseName)}`);
+            if (response.ok) {
+                const externalCourseId = await response.json();
+                if (externalCourseId) {
+                    // Şimdi dersi detaylıca çekelim
+                    const courseResponse = await fetch(`/external/get-course-details?id=${externalCourseId}`);
+                    if (courseResponse.ok) {
+                        const course = await courseResponse.json();
+
+                        // Formları doldur
+                        document.getElementById('newUniversityName').value = universityName;
+                        await loadNewFaculties();
+                        document.getElementById('newFacultyName').value = facultyName;
+                        await loadNewDepartments();
+                        document.getElementById('newDepartmentName').value = departmentName;
+
+                        document.getElementById('newCourseName').value = course.courseName;
+                        document.getElementById('newCourseEcts').value = course.ects;
+                        document.getElementById('newCourseLanguage').value = course.language;
+                        document.getElementById('newCourseTheoreticalHours').value = course.theoreticalHours;
+                        document.getElementById('newCoursePracticalHours').value = course.practicalHours;
+
+                        const descriptions = course.description ? course.description.split(' | ') : [];
+                        for (let i = 1; i <= 14; i++) {
+                            document.getElementById(`week${i}`).value = descriptions[i-1] || "";
+                        }
+
+                        document.getElementById('saveEditedCourseButton').style.display = "inline-block"; // Kaydet butonunu aç
+                    }
+                }
+            } else {
+                alert("Ders bulunamadı.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Bir hata oluştu.");
+        }
+    }
+
+    async function saveEditedCourse() {
+        const universityName = document.getElementById('newUniversityName').value.trim();
+        const facultyName = document.getElementById('newFacultyName').value.trim();
+        const departmentName = document.getElementById('newDepartmentName').value.trim();
+        const courseName = document.getElementById('newCourseName').value.trim();
+        const ects = document.getElementById('newCourseEcts').value.trim();
+        const language = document.getElementById('newCourseLanguage').value.trim();
+        const theoreticalHours = document.getElementById('newCourseTheoreticalHours').value.trim();
+        const practicalHours = document.getElementById('newCoursePracticalHours').value.trim();
+
+        // 14 haftalık açıklamaları al
+        let descriptions = [];
+        for (let i = 1; i <= 14; i++) {
+            let weekDescription = document.getElementById(`week${i}`).value.trim();
+            descriptions.push(weekDescription);
+        }
+        let mergedDescription = descriptions.join(" | ");
+
+        if (!universityName || !facultyName || !departmentName || !courseName) {
+            alert("Lütfen tüm alanları doldurun.");
+            return;
+        }
+
+        try {
+            // 1- Önce eski dersi inaktif yap
+            const responseUniversity = await fetch(`/university/find-id?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}`);
+            const universityId = responseUniversity.ok ? await responseUniversity.json() : null;
+
+            if (!universityId) {
+                alert("Üniversite bulunamadı.");
+                return;
+            }
+
+            const deactivateResponse = await fetch(`/external/deactivate-course?universityId=${universityId}&courseName=${encodeURIComponent(courseName)}`, {
+                method: 'PUT'
+            });
+
+            if (!deactivateResponse.ok) {
+                alert("Eski ders pasif yapılamadı.");
+                return;
+            }
+
+            // 2- Yeni güncellenmiş dersi ekle
+            const newCourse = {
+                university: {
+                    universityName: universityName,
+                    facultyName: facultyName,
+                    departmentName: departmentName
+                },
+                courseName: courseName,
+                ects: ects,
+                language: language,
+                theoreticalHours: theoreticalHours,
+                practicalHours: practicalHours,
+                description: mergedDescription
+            };
+
+            const response = await fetch('/external/add-course', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newCourse)
+            });
+
+            if (response.ok) {
+                alert('Güncellenmiş ders başarıyla eklendi!');
+                location.reload();
+            } else {
+                const error = await response.text();
+                alert('Ders eklenirken bir hata oluştu: ' + error);
+            }
+        } catch (error) {
+            console.error("Ders güncellerken hata:", error);
+            alert("Bir hata oluştu.");
+        }
     }
 </script>
 </body>

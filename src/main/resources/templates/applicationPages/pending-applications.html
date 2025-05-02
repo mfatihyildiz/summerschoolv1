@@ -245,6 +245,9 @@
             <td>
                 <button class="details-button" onclick="showDetails(this)"
                         th:data-id="${app.applicationId}"
+                        th:data-student-name="${app.student.name}"
+                        th:data-student-surname="${app.student.surname}"
+                        th:data-student-number="${app.student.studentNumber}"
                         th:data-home-course="${app.homeCourse.courseName}"
                         th:data-home-ects="${app.homeCourse.ects}"
                         th:data-home-language="${app.homeCourse.language}"
@@ -271,6 +274,13 @@
     <div class="modal-content">
         <span class="close" onclick="closePopup()">&times;</span>
         <h2>Başvuru Detayları</h2>
+
+        <div id="studentInfoSection">
+            <h3>Öğrenci Bilgileri</h3>
+            <p><strong>Adı:</strong> <span id="popupStudentName"></span></p>
+            <p><strong>Soyadı:</strong> <span id="popupStudentSurname"></span></p>
+            <p><strong>Öğrenci Numarası:</strong> <span id="popupStudentNumber"></span></p>
+        </div>
 
         <div class="details-container">
             <div class="column">
@@ -327,6 +337,10 @@
 <script>
     function showDetails(button) {
         let applicationId = button.getAttribute("data-id");
+
+        document.getElementById("popupStudentName").innerText = button.getAttribute("data-student-name");
+        document.getElementById("popupStudentSurname").innerText = button.getAttribute("data-student-surname");
+        document.getElementById("popupStudentNumber").innerText = button.getAttribute("data-student-number");
 
         document.getElementById("popupHomeCourse").innerText = button.getAttribute("data-home-course");
         document.getElementById("popupHomeEcts").innerText = button.getAttribute("data-home-ects");

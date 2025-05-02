@@ -19,6 +19,8 @@ public class ExternalCourse {
     private int practicalHours;
     @Column(length = 2000)
     private String description;
+    @Column(nullable = false)
+    private boolean isActive = true;
 
     @ManyToOne
     @JoinColumn(name = "university_id", nullable = false, referencedColumnName = "university_id")
@@ -90,5 +92,13 @@ public class ExternalCourse {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(boolean active) {
+        isActive = active;
     }
 }

@@ -162,13 +162,13 @@ public class ApplicationController {
                     .map(University::getUniversityId)
                     .orElseThrow(() -> new RuntimeException("University ID bulunamadı."));
 
-            // 2. Adım: ExternalCourseId'yi al
+            // 2. Adım: Aktif ExternalCourseId'yi al
             return externalCourseRepo
-                    .findByUniversityIdAndCourseName(universityId, courseName)
+                    .findByUniversity_UniversityIdAndCourseNameAndIsActiveTrue(universityId, courseName)
                     .map(ExternalCourse::getExternalCourseId)
-                    .orElseThrow(() -> new RuntimeException("ExternalCourse ID bulunamadı."));
+                    .orElseThrow(() -> new RuntimeException("Aktif ExternalCourse ID bulunamadı."));
         } catch (RuntimeException e) {
-            return "ERROR: " + e.getMessage(); // ✅ JSON hata yanıtı döndür
+            return "ERROR: " + e.getMessage();
         }
     }
 

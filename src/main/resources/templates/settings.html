@@ -248,8 +248,15 @@
                             th:data-student-email="${app.student.email}"
                             th:data-home-course-name="${app.homeCourse.courseName}"
                             th:data-home-course-ects="${app.homeCourse.ects}"
+                            th:data-home-course-language="${app.homeCourse.language}"
+                            th:data-home-course-description="${app.homeCourse.description}"
                             th:data-external-course-name="${app.externalCourse.courseName}"
                             th:data-external-course-ects="${app.externalCourse.ects}"
+                            th:data-external-course-language="${app.externalCourse.language}"
+                            th:data-external-course-university="${app.externalCourse.university.universityName}"
+                            th:data-external-course-faculty="${app.externalCourse.university.facultyName}"
+                            th:data-external-course-department="${app.externalCourse.university.departmentName}"
+                            th:data-external-course-description="${app.externalCourse.description}"
                             onclick="showApplicationDetails(this)">
                         📄 Detayları Göster
                     </button>
@@ -287,11 +294,36 @@
 
             <hr>
 
-            <h3>Ders Bilgileri</h3>
-            <p><strong>Home Course Adı:</strong> <span id="modalHomeCourseName"></span></p>
-            <p><strong>Home Course ECTS:</strong> <span id="modalHomeCourseEcts"></span></p>
-            <p><strong>External Course Adı:</strong> <span id="modalExternalCourseName"></span></p>
-            <p><strong>External Course ECTS:</strong> <span id="modalExternalCourseEcts"></span></p>
+            <h3>Home Course Detayları</h3>
+            <p><strong>Adı:</strong> <span id="modalHomeCourseName"></span></p>
+            <p><strong>ECTS:</strong> <span id="modalHomeCourseEcts"></span></p>
+            <p><strong>Dil:</strong> <span id="modalHomeCourseLanguage"></span></p>
+
+            <h4>Home Course İçeriği:</h4>
+            <table>
+                <thead>
+                <tr><th>Hafta</th><th>İçerik</th></tr>
+                </thead>
+                <tbody id="modalHomeCourseDescriptionTable"></tbody>
+            </table>
+
+            <hr>
+
+            <h3>External Course Detayları</h3>
+            <p><strong>Adı:</strong> <span id="modalExternalCourseName"></span></p>
+            <p><strong>ECTS:</strong> <span id="modalExternalCourseEcts"></span></p>
+            <p><strong>Dil:</strong> <span id="modalExternalCourseLanguage"></span></p>
+            <p><strong>Üniversite:</strong> <span id="modalExternalCourseUniversity"></span></p>
+            <p><strong>Fakülte:</strong> <span id="modalExternalCourseFaculty"></span></p>
+            <p><strong>Bölüm:</strong> <span id="modalExternalCourseDepartment"></span></p>
+
+            <h4>External Course İçeriği:</h4>
+            <table>
+                <thead>
+                <tr><th>Hafta</th><th>İçerik</th></tr>
+                </thead>
+                <tbody id="modalExternalCourseDescriptionTable"></tbody>
+            </table>
         </div>
     </div>
 
@@ -432,6 +464,7 @@
         </div>
     </div>
 
+    <!-- ExternalCourse -->
     <div id="ExternalCourse" class="tab-content">
         <h3>External Course Tablosu</h3>
         <table>
@@ -461,6 +494,7 @@
                             th:data-department-name="${course.university.departmentName}"
                             th:data-ects="${course.ects}"
                             th:data-language="${course.language}"
+                            th:data-description="${course.description}"
                             onclick="showExternalCourseDetails(this)">
                         📄 Detayları Göster
                     </button>
@@ -485,6 +519,14 @@
             <p><strong>Bölüm:</strong> <span id="popupExternalDepartmentName"></span></p>
             <p><strong>ECTS:</strong> <span id="popupExternalEcts"></span></p>
             <p><strong>Dil:</strong> <span id="popupExternalLanguage"></span></p>
+
+            <h3>Ders İçeriği</h3>
+            <table>
+                <thead>
+                <tr><th>Hafta</th><th>İçerik</th></tr>
+                </thead>
+                <tbody id="popupExternalDescriptionTable"></tbody>
+            </table>
         </div>
     </div>
 
@@ -709,10 +751,17 @@
             <p><strong>Practical Hours:</strong> <span id="popupHomePracticalHours"></span></p>
             <p><strong>Semester:</strong> <span id="popupHomeSemester"></span></p>
             <p><strong>Education Year:</strong> <span id="popupHomeEducationYear"></span></p>
-            <h3>Ders Açıklaması</h3>
-            <p id="popupHomeDescription"></p>
+
+            <h3>Ders İçeriği</h3>
+            <table>
+                <thead>
+                <tr><th>Hafta</th><th>İçerik</th></tr>
+                </thead>
+                <tbody id="popupHomeDescriptionTable"></tbody>
+            </table>
         </div>
     </div>
+
 
     <!-- University -->
     <div id="University" class="tab-content">
@@ -811,20 +860,48 @@
     }
 
     function showApplicationDetails(button) {
-        document.getElementById('modalApplicationId').innerText = button.getAttribute('data-application-id');
-        document.getElementById('modalSubmissionDate').innerText = button.getAttribute('data-submission-date');
-        document.getElementById('modalStatus').innerText = button.getAttribute('data-status');
+        // Başvuru ve Öğrenci Bilgileri
+        document.getElementById("modalApplicationId").innerText = button.getAttribute("data-application-id");
+        document.getElementById("modalSubmissionDate").innerText = button.getAttribute("data-submission-date");
+        document.getElementById("modalStatus").innerText = button.getAttribute("data-status");
+        document.getElementById("modalStudentName").innerText = button.getAttribute("data-student-name");
+        document.getElementById("modalStudentNumber").innerText = button.getAttribute("data-student-number");
+        document.getElementById("modalStudentEmail").innerText = button.getAttribute("data-student-email");
 
-        document.getElementById('modalStudentName').innerText = button.getAttribute('data-student-name');
-        document.getElementById('modalStudentNumber').innerText = button.getAttribute('data-student-number');
-        document.getElementById('modalStudentEmail').innerText = button.getAttribute('data-student-email');
+        // Home Course Bilgileri
+        document.getElementById("modalHomeCourseName").innerText = button.getAttribute("data-home-course-name");
+        document.getElementById("modalHomeCourseEcts").innerText = button.getAttribute("data-home-course-ects");
+        document.getElementById("modalHomeCourseLanguage").innerText = button.getAttribute("data-home-course-language");
 
-        document.getElementById('modalHomeCourseName').innerText = button.getAttribute('data-home-course-name');
-        document.getElementById('modalHomeCourseEcts').innerText = button.getAttribute('data-home-course-ects');
-        document.getElementById('modalExternalCourseName').innerText = button.getAttribute('data-external-course-name');
-        document.getElementById('modalExternalCourseEcts').innerText = button.getAttribute('data-external-course-ects');
+        fillDescriptionTable("modalHomeCourseDescriptionTable", button.getAttribute("data-home-course-description"));
 
-        document.getElementById('applicationDetailsModal').style.display = "block";
+        // External Course Bilgileri
+        document.getElementById("modalExternalCourseName").innerText = button.getAttribute("data-external-course-name");
+        document.getElementById("modalExternalCourseEcts").innerText = button.getAttribute("data-external-course-ects");
+        document.getElementById("modalExternalCourseLanguage").innerText = button.getAttribute("data-external-course-language");
+        document.getElementById("modalExternalCourseUniversity").innerText = button.getAttribute("data-external-course-university");
+        document.getElementById("modalExternalCourseFaculty").innerText = button.getAttribute("data-external-course-faculty");
+        document.getElementById("modalExternalCourseDepartment").innerText = button.getAttribute("data-external-course-department");
+
+        fillDescriptionTable("modalExternalCourseDescriptionTable", button.getAttribute("data-external-course-description"));
+
+        document.getElementById("applicationDetailsModal").style.display = "block";
+    }
+
+    function fillDescriptionTable(tableId, description) {
+        const tableBody = document.getElementById(tableId);
+        tableBody.innerHTML = "";
+
+        if (description) {
+            const weeks = description.split(" | ");
+            weeks.forEach((weekContent, index) => {
+                let row = tableBody.insertRow();
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                cell1.innerText = `Hafta ${index + 1}`;
+                cell2.innerText = weekContent.trim() || "Boş";
+            });
+        }
     }
 
     function closeApplicationDetails() {
@@ -853,6 +930,8 @@
         document.getElementById("popupExternalEcts").innerText = button.getAttribute("data-ects");
         document.getElementById("popupExternalLanguage").innerText = button.getAttribute("data-language");
 
+        fillDescriptionTable("popupExternalDescriptionTable", button.getAttribute("data-description"));
+
         document.getElementById("externalCoursePopup").style.display = "block";
     }
 
@@ -868,7 +947,8 @@
         document.getElementById("popupHomePracticalHours").innerText = button.getAttribute("data-practical-hours");
         document.getElementById("popupHomeSemester").innerText = button.getAttribute("data-semester");
         document.getElementById("popupHomeEducationYear").innerText = button.getAttribute("data-education-year");
-        document.getElementById("popupHomeDescription").innerText = button.getAttribute("data-description");
+
+        fillDescriptionTable("popupHomeDescriptionTable", button.getAttribute("data-description"));
 
         document.getElementById("homeCoursePopup").style.display = "block";
     }
