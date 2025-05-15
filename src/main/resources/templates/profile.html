@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Profil Sayfası</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: visible !important;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; /* merkeze değil, iki uca yasla */
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar a,.dropbtn  {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #555;
+        }
+
+        .dropdown {
+            margin-left: auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<input type="hidden" id="userRole" th:value="${role}" />
+
+<div class="navbar">
+    <div>
+        <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE' || role == 'ADMIN'}">Dashboard</a>
+        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT' || role == 'ADMIN'}"
+           th:classappend="${isPreviewMode == true or isApplicationPeriod == true ? '' : 'disabled-link'}"
+           th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
+           onclick="return checkApplicationPeriod();">
+            Başvuru Yap
+        </a>
+        <a href="/applications/my-applications" th:if="${role == 'STUDENT' || role == 'ADMIN'}">Başvurularım</a>
+        <a href="/applications/pending" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Bekleyen Başvurular</a>
+        <a href="/applications/approved" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Onaylanan Başvurular</a>
+        <a href="/applications/rejected" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Reddedilen Başvurular</a>
+        <a href="/settings" th:if="${role == 'COMMITTEE'|| role == 'ADMIN'}">Ayarlar</a>
+    </div>
+
+    <div class="dropdown" style="margin-left:auto; position: relative;">
+        <button class="dropbtn" onclick="toggleDropdown()" id="userDropdownBtn">
+            <span id="usernameText" th:text="${user.username}">Kullanıcı</span> &#9662;
+        </button>
+        <div id="userDropdown" class="dropdown-content">
+            <a href="/profile">Profil Sayfası</a>
+            <a href="/change-password">Şifre Değiştir</a>
+            <a href="/logout">Çıkış Yap</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h1>Profil Bilgileri</h1>
+
+    <div th:if="${role == 'STUDENT'}">
+        <p><strong>Ad:</strong> <span th:text="${user.name}"></span></p>
+        <p><strong>Soyad:</strong> <span th:text="${user.surname}"></span></p>
+        <p><strong>Öğrenci No:</strong> <span th:text="${user.studentNumber}"></span></p>
+        <p><strong>E-posta:</strong> <span th:text="${user.email}"></span></p>
+        <p><strong>Dönem:</strong> <span th:text="${user.semester}"></span></p>
+        <p><strong>Yıl:</strong> <span th:text="${user.year}"></span></p>
+        <p><strong>GNO:</strong> <span th:text="${user.gpa}"></span></p>
+    </div>
+
+    <div th:if="${role == 'COMMITTEE'}">
+        <p><strong>Ad:</strong> <span th:text="${user.name}"></span></p>
+        <p><strong>Soyad:</strong> <span th:text="${user.surname}"></span></p>
+        <p><strong>E-posta:</strong> <span th:text="${user.email}"></span></p>
+        <p><strong>Rol:</strong> <span th:text="${user.role}"></span></p>
+    </div>
+</div>
+
+<script>
+    function toggleDropdown() {
+        document.getElementById("userDropdown").classList.toggle("show");
+    }
+
+    window.onclick = function (event) {
+        const button = document.getElementById("userDropdownBtn");
+        if (!button.contains(event.target)) {
+            document.getElementById("userDropdown").classList.remove("show");
+        }
+    }
+</script>
+</body>
+</html>

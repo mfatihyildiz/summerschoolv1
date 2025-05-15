@@ -33,7 +33,8 @@ public class SecurityFilterConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/error").permitAll()
-                        .requestMatchers("/dashboard", "/applications/**", "/settings/**", "/external/**", "/university/**").hasAnyRole(Role.STUDENT.name(), Role.COMMITTEE.name(), Role.ADMIN.name())
+                        .requestMatchers("/dashboard", "/applications/**", "/settings/**", "/external/**", "/university/**",
+                                "/profile", "/change-password").hasAnyRole(Role.STUDENT.name(), Role.COMMITTEE.name(), Role.ADMIN.name())
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)

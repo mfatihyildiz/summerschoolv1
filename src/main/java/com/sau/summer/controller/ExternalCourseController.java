@@ -107,7 +107,7 @@ public class ExternalCourseController {
     @PutMapping("/deactivate-course")
     @ResponseBody
     public String deactivateCourse(@RequestParam Long universityId, @RequestParam String courseName) {
-        Optional<ExternalCourse> courseOpt = externalCourseRepo.findByUniversityIdAndCourseName(universityId, courseName);
+        Optional<ExternalCourse> courseOpt = externalCourseRepo.findActiveByUniversityIdAndCourseName(universityId, courseName);
 
         if (courseOpt.isPresent()) {
             ExternalCourse course = courseOpt.get();

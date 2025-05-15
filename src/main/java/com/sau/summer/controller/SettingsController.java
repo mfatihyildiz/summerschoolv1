@@ -76,16 +76,18 @@ public class SettingsController {
     public String showSettingsPage(final Model model, final HttpSession session, final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
         if (redirect != null) {
-            return redirect; // ✅ Eğer yönlendirme gerekiyorsa, direkt yönlendir
+            return redirect; // Eğer yönlendirme gerekiyorsa, direkt yönlendir
         }
 
         boolean isPreviewMode = applicationPeriodService.isPreviewOpen();
         boolean isApplicationPeriod = applicationPeriodService.isApplicationOpen();
         String role = (String) session.getAttribute("role");
+        Committee committee = (Committee) session.getAttribute("committee");
 
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
+        model.addAttribute("user", committee);
 
         model.addAttribute("currentPeriod", applicationPeriodRepo.findTopByOrderByIdDesc().orElse(new ApplicationPeriod()));
         model.addAttribute("applications", applicationRepo.findAll());
@@ -274,7 +276,7 @@ public class SettingsController {
     }
 
     @PostMapping("/lock-student")
-    public String lockOrUnlockStudentfinal (@RequestParam("id") Long studentId, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String lockOrUnlockStudentfinal(@RequestParam("id") Long studentId, final HttpSession session, final RedirectAttributes redirectAttributes) {
         String role = (String) session.getAttribute("role");
         if (!"ADMIN".equals(role)) {
             redirectAttributes.addFlashAttribute("errorMessage", "Yetkisiz erişim!");

@@ -78,6 +78,7 @@ public class ApplicationController {
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
+        model.addAttribute("user", student);
 
         if (!isPreviewMode && !isApplicationPeriod) {
             model.addAttribute("showErrorPopup", true);
@@ -125,6 +126,7 @@ public class ApplicationController {
 
         String role = (String) session.getAttribute("role");
         Long homeCourseId = (Long) session.getAttribute("selectedHomeCourseId");
+        Student student = (Student) session.getAttribute("student");
 
         if (homeCourseId == null) {
             model.addAttribute("errorMessage", "HomeCourse ID bulunamadı. Lütfen tekrar başlayın.");
@@ -145,6 +147,7 @@ public class ApplicationController {
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
+        model.addAttribute("user", student);
         return "new-application2";
     }
 
@@ -220,6 +223,7 @@ public class ApplicationController {
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
+        model.addAttribute("user",student);
 
         return "confirmation";
     }
@@ -280,6 +284,7 @@ public class ApplicationController {
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
+        model.addAttribute("user", student);
 
         List<Application> applicationsList = applicationRepo.findByStudent_StudentId(student.getStudentId());
         model.addAttribute("applications", applicationsList);
@@ -294,6 +299,7 @@ public class ApplicationController {
         if (redirect != null) return redirect;
 
         String role = (String) session.getAttribute("role");
+        Committee committee = (Committee) session.getAttribute("committee");
 
         boolean isPreviewMode = applicationPeriodService.isPreviewOpen();
         boolean isApplicationPeriod = applicationPeriodService.isApplicationOpen();
@@ -301,6 +307,7 @@ public class ApplicationController {
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
+        model.addAttribute("user", committee);
 
         // PENDING statüsündeki başvuruları çek
         List<Application> pendingApplications = applicationRepo.findByStatus(ApplicationStatus.PENDING);
@@ -315,6 +322,7 @@ public class ApplicationController {
         if (redirect != null) return redirect;
 
         String role = (String) session.getAttribute("role");
+        Committee committee = (Committee) session.getAttribute("committee");
 
         boolean isPreviewMode = applicationPeriodService.isPreviewOpen();
         boolean isApplicationPeriod = applicationPeriodService.isApplicationOpen();
@@ -322,6 +330,7 @@ public class ApplicationController {
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
+        model.addAttribute("user", committee);
 
         List<Application> approvedApplications = applicationRepo.findByStatus(ApplicationStatus.APPROVED);
         model.addAttribute("approvedApplications", approvedApplications);
@@ -348,6 +357,7 @@ public class ApplicationController {
         if (redirect != null) return redirect;
 
         String role = (String) session.getAttribute("role");
+        Committee committee = (Committee) session.getAttribute("committee");
 
         boolean isPreviewMode = applicationPeriodService.isPreviewOpen();
         boolean isApplicationPeriod = applicationPeriodService.isApplicationOpen();
@@ -355,6 +365,7 @@ public class ApplicationController {
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
+        model.addAttribute("user", committee);
 
         List<Application> rejectedApplications = applicationRepo.findByStatus(ApplicationStatus.REJECTED);
         model.addAttribute("rejectedApplications", rejectedApplications);

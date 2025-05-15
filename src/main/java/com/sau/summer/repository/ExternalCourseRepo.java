@@ -23,4 +23,8 @@ public interface ExternalCourseRepo extends JpaRepository<ExternalCourse, Long> 
     Optional<ExternalCourse> findByUniversityIdAndCourseName(@Param("universityId") Long universityId, @Param("courseName") String courseName);
 
     Optional<ExternalCourse> findByUniversity_UniversityIdAndCourseNameAndIsActiveTrue(Long universityId, String courseName);
+
+    @Query("SELECT c FROM ExternalCourse c WHERE c.university.universityId = :universityId AND c.courseName = :courseName AND c.isActive = true")
+    Optional<ExternalCourse> findActiveByUniversityIdAndCourseName(@Param("universityId") Long universityId, @Param("courseName") String courseName);
+
 }

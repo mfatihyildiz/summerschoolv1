@@ -1,22 +1,21 @@
 package com.sau.summer.controller;
 
-import com.sau.summer.entity.Committee;
-import com.sau.summer.entity.Student;
 import com.sau.summer.service.ApplicationPeriodService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import com.sau.summer.entity.Committee;
+import com.sau.summer.entity.Student;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-public class DashboardController {
+public class ProfileController {
 
     @Autowired
     private ApplicationPeriodService applicationPeriodService;
 
-    // **Öğrenci ve komite erişimi kontrolü**
     private String checkStudentAndCommitteeAccess(final HttpSession session, final RedirectAttributes redirectAttributes) {
         String role = (String) session.getAttribute("role");
 
@@ -36,46 +35,42 @@ public class DashboardController {
         return "redirect:/login";
     }
 
-    @GetMapping("/dashboard")
-    public String dashboard(final HttpSession session, final Model model, final RedirectAttributes redirectAttributes) {
+    @GetMapping("/profile")
+    public String showProfile(final HttpSession session, final Model model, final RedirectAttributes redirectAttributes) {
+
         String redirect = checkStudentAndCommitteeAccess(session, redirectAttributes);
         if (redirect != null) return redirect;
 
-        String role = (String) session.getAttribute("role");
-        String fullName = "Bilinmeyen Kullanıcı";
-        String username = "Bilinmeyen Kullanıcı";
-
-        if ("STUDENT".equals(role)) {
-            Student student = (Student) session.getAttribute("student");
-            if (student != null) {
-                fullName = student.getName() + " " + student.getSurname();
-                username = student.getUsername();
-            }
+        Object user = session.getAttribute("student");
+        if (user != null) {
+            Student student = (Student) user;
+            model.addAttribute("user", student);
             model.addAttribute("role", "STUDENT");
-        } else if ("COMMITTEE".equals(role)) {
-            Committee committee = (Committee) session.getAttribute("committee");
-            if (committee != null) {
-                fullName = committee.getName() + " " + committee.getSurname();
-                username = committee.getUsername();
-            }
+            return "profile";
+        }
+
+        user = session.getAttribute("committee");
+        if (user != null) {
+            Committee committee = (Committee) user;
+            model.addAttribute("user", committee);
             model.addAttribute("role", "COMMITTEE");
-        } else if ("ADMIN".equals(role)) {
-            Committee committee = (Committee) session.getAttribute("committee");
-            if (committee != null) {
-                fullName = committee.getName() + " " + committee.getSurname();
-                username = committee.getUsername();
-            }
+            return "profile";
+        }
+
+        user = session.getAttribute("committee");
+        if (user != null) {
+            Committee committee = (Committee) user;
+            model.addAttribute("user", committee);
             model.addAttribute("role", "ADMIN");
+            return "profile";
         }
 
         boolean isPreviewMode = applicationPeriodService.isPreviewOpen();
         boolean isApplicationPeriod = applicationPeriodService.isApplicationOpen();
 
-        model.addAttribute("fullName", fullName);
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
-        model.addAttribute("username", username);
 
-        return "dashboard";
+        return "redirect:/login";
     }
 }

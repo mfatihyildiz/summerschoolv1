@@ -98,7 +98,7 @@ public class ExternalCourse {
         return isActive;
     }
 
-    public void setIsActive(boolean active) {
-        isActive = active;
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
     }
 }
