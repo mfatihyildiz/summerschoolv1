@@ -251,9 +251,23 @@
         </select>
     </form>
 
-    <button onclick="document.getElementById('addCourseForm').style.display='block'">Ders Ekle</button>
+    <button onclick="document.getElementById('addCourseForm').style.display='block'">Ders Ekle & Güncelle</button>
     <div id="addCourseForm" style="display:none;">
         <h3>Yeni Ders Bilgileri</h3>
+
+        <div style="background-color:#e9f3ff; padding: 15px; border-left: 5px solid #007bff; border-radius: 4px; margin-bottom: 15px;">
+            <strong>Yeni Ders Ekleme:</strong><br>
+            Yeni ders eklemek için aşağıdaki tüm alanları eksiksiz ve kısaltma kullanmadan doldurun. Ardından "Yeni Ders Ekle" butonuna tıklayın.
+        </div>
+
+        <div style="background-color:#fff3cd; padding: 15px; border-left: 5px solid #ffc107; border-radius: 4px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>Ders Güncelleme:</strong><br>
+                Ders güncellemek için öncelikle yukarıdan güncellemek istediğiniz dersi seçin. Ardından "Seçilen Dersi Düzenle" butonuna tıklayın. Güncellemek istediğiniz alanları tam ve eksiksiz bir şekilde güncelleyin. Son olarak "Güncellenmiş Dersi Kaydet" butonuna tıklayın.<br>
+                <strong>Not:</strong> Ders güncellerken üniversite, fakülte, bölüm ve ders adı alanlarını değiştiremezsiniz. Bu alanlarda değişiklik yapmak istiyorsanız yeni bir ders ekleyin.
+            </div>
+            <button type="button" onclick="populateEditForm()" style="margin-left: 20px; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Seçilen Dersi Düzenle</button>
+        </div>
 
         <label for="newUniversityName">Üniversite:</label>
         <select id="newUniversityName" name="newUniversityName" onchange="loadNewFaculties()" required>
@@ -302,8 +316,7 @@
             </script>
         </div>
 
-        <button type="button" onclick="addNewCourse()">Dersi Ekle</button>
-        <button type="button" onclick="populateEditForm()">Dersi Düzenle</button>
+        <button type="button" onclick="addNewCourse()">Yeni Ders Ekle</button>
         <button type="button" id="saveEditedCourseButton" style="display:none;" onclick="saveEditedCourse()">Güncellenmiş Dersi Kaydet</button>
         <button type="button" class="cancel-btn"
                 onclick="document.getElementById('addCourseForm').style.display='none'">İptal
@@ -718,6 +731,11 @@
             console.error(error);
             alert("Bir hata oluştu.");
         }
+
+        document.getElementById('newUniversityName').disabled = true;
+        document.getElementById('newFacultyName').disabled = true;
+        document.getElementById('newDepartmentName').disabled = true;
+        document.getElementById('newCourseName').readOnly = true;
     }
 
     async function saveEditedCourse() {

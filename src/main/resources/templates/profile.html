@@ -135,19 +135,21 @@
         <p><strong>Ad:</strong> <span th:text="${user.name}"></span></p>
         <p><strong>Soyad:</strong> <span th:text="${user.surname}"></span></p>
         <p><strong>Öğrenci No:</strong> <span th:text="${user.studentNumber}"></span></p>
-        <p><strong>E-posta:</strong> <span th:text="${user.email}"></span></p>
-        <p><strong>Dönem:</strong> <span th:text="${user.semester}"></span></p>
-        <p><strong>Yıl:</strong> <span th:text="${user.year}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+        <p><strong>Sınıf:</strong> <span id="yearText" th:text="${user.educationYear}"></span></p>
+        <p><strong>Dönem:</strong> <span id="semesterText" th:text="${user.semester}"></span></p>
         <p><strong>GNO:</strong> <span th:text="${user.gpa}"></span></p>
     </div>
 
     <div th:if="${role == 'COMMITTEE'}">
         <p><strong>Ad:</strong> <span th:text="${user.name}"></span></p>
         <p><strong>Soyad:</strong> <span th:text="${user.surname}"></span></p>
-        <p><strong>E-posta:</strong> <span th:text="${user.email}"></span></p>
-        <p><strong>Rol:</strong> <span th:text="${user.role}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+        <p><strong>Kullanıcı Adı:</strong> <span th:text="${user.username}"></span></p>
+        <p><strong>Rol:</strong> <span id="roleText" th:text="${user.role}"></span></p>
     </div>
 </div>
+
 
 <script>
     function toggleDropdown() {
@@ -160,6 +162,45 @@
             document.getElementById("userDropdown").classList.remove("show");
         }
     }
+
+    const semesterMap = {
+        "FALL": "Güz",
+        "SPRING": "Bahar"
+    };
+
+    const yearMap = {
+        "FIRST": "1. Sınıf",
+        "SECOND": "2. Sınıf",
+        "THIRD": "3. Sınıf",
+        "FOURTH": "4. Sınıf"
+    };
+
+    const roleMap = {
+        "STUDENT": "Öğrenci",
+        "COMMITTEE": "Komite Üyesi",
+        "ADMIN": "Admin"
+    };
+
+    window.onload = function () {
+        const semesterSpan = document.getElementById("semesterText");
+        const yearSpan = document.getElementById("yearText");
+        const roleSpan = document.getElementById("roleText");
+
+        if (semesterSpan) {
+            const rawSemester = semesterSpan.innerText.trim();
+            semesterSpan.innerText = semesterMap[rawSemester] || rawSemester;
+        }
+
+        if (yearSpan) {
+            const rawYear = yearSpan.innerText.trim();
+            yearSpan.innerText = yearMap[rawYear] || rawYear;
+        }
+
+        if (roleSpan) {
+            const rawRole = roleSpan.innerText.trim();
+            roleSpan.innerText = roleMap[rawRole] || rawRole;
+        }
+    };
 </script>
 </body>
 </html>

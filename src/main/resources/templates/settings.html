@@ -299,7 +299,14 @@
                 <td th:text="${app.student.name} + ' ' + ${app.student.surname}"></td>
                 <td th:text="${app.homeCourse.courseName}"></td>
                 <td th:text="${app.externalCourse.courseName}"></td>
-                <td th:text="${app.status}"></td>
+                <td th:switch="${app.status.name()}"
+                    th:classappend="${app.status.name() == 'PENDING' ? 'status-pending' : (app.status.name() == 'APPROVED' ? 'status-approved' : 'status-rejected')}">
+                    <span th:case="'PENDING'">Beklemede</span>
+                    <span th:case="'APPROVED'">Onaylandı</span>
+                    <span th:case="'REJECTED'">Reddedildi</span>
+                    <span th:case="'CANCELLED'">İptal Edildi</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
                 <td th:text="${app.submissionDate}"></td>
                 <td>
                     <button type="button" class="details-btn"
@@ -547,7 +554,12 @@
                 <td th:text="${course.courseName}"></td>
                 <td th:text="${course.university.universityName}"></td>
                 <td th:text="${course.ects}"></td>
-                <td th:text="${course.language}"></td>
+                <td th:switch="${course.language.name()}"
+                    th:classappend="${course.language.name() == 'TURKISH' ? 'lang-tr' : (course.language.name() == 'ENGLISH' ? 'lang-en' : 'lang-unknown')}">
+                    <span th:case="'TURKISH'">Türkçe</span>
+                    <span th:case="'ENGLISH'">İngilizce</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
                 <td>
                     <button type="button" class="details-btn"
                             th:data-id="${course.externalCourseId}"
@@ -721,11 +733,31 @@
                 <td th:text="${course.homeCourseId}"></td>
                 <td th:text="${course.courseName}"></td>
                 <td th:text="${course.ects}"></td>
-                <td th:text="${course.language}"></td>
+                <td th:switch="${course.language.name()}"
+                    th:classappend="${course.language.name() == 'TURKISH' ? 'lang-tr' : (course.language.name() == 'ENGLISH' ? 'lang-en' : 'lang-unknown')}">
+                    <span th:case="'TURKISH'">Türkçe</span>
+                    <span th:case="'ENGLISH'">İngilizce</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
                 <td th:text="${course.theoreticalHours}"></td>
                 <td th:text="${course.practicalHours}"></td>
-                <td th:text="${course.semester}"></td>
-                <td th:text="${course.educationYear}"></td>
+                <td th:switch="${course.semester.name()}"
+                    th:classappend="${course.semester.name() == 'FALL' ? 'semester-fall' : (course.semester.name() == 'SPRING' ? 'semester-spring' : 'semester-unknown')}">
+                    <span th:case="'FALL'">Güz</span>
+                    <span th:case="'SPRING'">Bahar</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
+                <td th:switch="${course.educationYear.name()}"
+                    th:classappend="${course.educationYear.name() == 'FIRST' ? 'year-1' :
+                    (course.educationYear.name() == 'SECOND' ? 'year-2' :
+                    (course.educationYear.name() == 'THIRD' ? 'year-3' :
+                    (course.educationYear.name() == 'FOURTH' ? 'year-4' : 'year-unknown')))}">
+                    <span th:case="'FIRST'">1. Sınıf</span>
+                    <span th:case="'SECOND'">2. Sınıf</span>
+                    <span th:case="'THIRD'">3. Sınıf</span>
+                    <span th:case="'FOURTH'">4. Sınıf</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
                 <td>
                     <button type="button" class="details-btn"
                             th:data-course-name="${course.courseName}"
@@ -934,14 +966,16 @@
         // Home Course Bilgileri
         document.getElementById("modalHomeCourseName").innerText = button.getAttribute("data-home-course-name");
         document.getElementById("modalHomeCourseEcts").innerText = button.getAttribute("data-home-course-ects");
-        document.getElementById("modalHomeCourseLanguage").innerText = button.getAttribute("data-home-course-language");
+        document.getElementById("modalHomeCourseLanguage").innerText =
+            languageMap[button.getAttribute("data-home-course-language")] || button.getAttribute("data-home-course-language");
 
         fillDescriptionTable("modalHomeCourseDescriptionTable", button.getAttribute("data-home-course-description"));
 
         // External Course Bilgileri
         document.getElementById("modalExternalCourseName").innerText = button.getAttribute("data-external-course-name");
         document.getElementById("modalExternalCourseEcts").innerText = button.getAttribute("data-external-course-ects");
-        document.getElementById("modalExternalCourseLanguage").innerText = button.getAttribute("data-external-course-language");
+        document.getElementById("modalExternalCourseLanguage").innerText =
+            languageMap[button.getAttribute("data-external-course-language")] || button.getAttribute("data-external-course-language");
         document.getElementById("modalExternalCourseUniversity").innerText = button.getAttribute("data-external-course-university");
         document.getElementById("modalExternalCourseFaculty").innerText = button.getAttribute("data-external-course-faculty");
         document.getElementById("modalExternalCourseDepartment").innerText = button.getAttribute("data-external-course-department");
@@ -991,7 +1025,8 @@
         document.getElementById("popupExternalFacultyName").innerText = button.getAttribute("data-faculty-name");
         document.getElementById("popupExternalDepartmentName").innerText = button.getAttribute("data-department-name");
         document.getElementById("popupExternalEcts").innerText = button.getAttribute("data-ects");
-        document.getElementById("popupExternalLanguage").innerText = button.getAttribute("data-language");
+        document.getElementById("popupExternalLanguage").innerText =
+            languageMap[button.getAttribute("data-language")] || button.getAttribute("data-language");
 
         fillDescriptionTable("popupExternalDescriptionTable", button.getAttribute("data-description"));
 
@@ -1005,11 +1040,14 @@
     function showHomeCourseDetails(button) {
         document.getElementById("popupHomeCourseName").innerText = button.getAttribute("data-course-name");
         document.getElementById("popupHomeEcts").innerText = button.getAttribute("data-ects");
-        document.getElementById("popupHomeLanguage").innerText = button.getAttribute("data-language");
+        document.getElementById("popupHomeLanguage").innerText =
+            languageMap[button.getAttribute("data-language")] || button.getAttribute("data-language");
         document.getElementById("popupHomeTheoreticalHours").innerText = button.getAttribute("data-theoretical-hours");
         document.getElementById("popupHomePracticalHours").innerText = button.getAttribute("data-practical-hours");
-        document.getElementById("popupHomeSemester").innerText = button.getAttribute("data-semester");
-        document.getElementById("popupHomeEducationYear").innerText = button.getAttribute("data-education-year");
+        document.getElementById("popupHomeSemester").innerText =
+            semesterMap[button.getAttribute("data-semester")] || button.getAttribute("data-semester");
+        document.getElementById("popupHomeEducationYear").innerText =
+            educationYearMap[button.getAttribute("data-education-year")] || button.getAttribute("data-education-year");
 
         fillDescriptionTable("popupHomeDescriptionTable", button.getAttribute("data-description"));
 
@@ -1044,6 +1082,23 @@
             document.getElementById("userDropdown").classList.remove("show");
         }
     }
+
+    const languageMap = {
+        "TURKISH": "Türkçe",
+        "ENGLISH": "İngilizce"
+    };
+
+    const semesterMap = {
+        "FALL": "Güz",
+        "SPRING": "Bahar"
+    };
+
+    const educationYearMap = {
+        "FIRST": "1. Sınıf",
+        "SECOND": "2. Sınıf",
+        "THIRD": "3. Sınıf",
+        "FOURTH": "4. Sınıf"
+    };
 </script>
 
 </body>

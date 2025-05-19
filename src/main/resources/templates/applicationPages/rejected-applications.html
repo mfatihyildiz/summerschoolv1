@@ -393,12 +393,14 @@
         // Home Course Bilgileri
         document.getElementById("popupHomeCourse").innerText = button.getAttribute("data-home-course");
         document.getElementById("popupHomeEcts").innerText = button.getAttribute("data-home-ects");
-        document.getElementById("popupHomeLanguage").innerText = button.getAttribute("data-home-language");
+        document.getElementById("popupHomeLanguage").innerText =
+            languageMap[button.getAttribute("data-home-language")] || button.getAttribute("data-home-language");
 
         // External Course Bilgileri
         document.getElementById("popupExternalCourse").innerText = button.getAttribute("data-external-course");
         document.getElementById("popupExternalEcts").innerText = button.getAttribute("data-external-ects");
-        document.getElementById("popupExternalLanguage").innerText = button.getAttribute("data-external-language");
+        document.getElementById("popupExternalLanguage").innerText =
+            languageMap[button.getAttribute("data-external-language")] || button.getAttribute("data-external-language");
         document.getElementById("popupExternalUniversity").innerText = button.getAttribute("data-external-university");
         document.getElementById("popupExternalFaculty").innerText = button.getAttribute("data-external-faculty");
         document.getElementById("popupExternalDepartment").innerText = button.getAttribute("data-external-department");
@@ -485,6 +487,11 @@
             document.getElementById("userDropdown").classList.remove("show");
         }
     }
+
+    const languageMap = {
+        "TURKISH": "Türkçe",
+        "ENGLISH": "İngilizce"
+    };
 </script>
 
 </body>

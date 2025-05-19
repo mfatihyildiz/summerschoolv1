@@ -407,12 +407,14 @@
 
         document.getElementById("popupHomeCourse").innerText = button.getAttribute("data-home-course");
         document.getElementById("popupHomeEcts").innerText = button.getAttribute("data-home-ects");
-        document.getElementById("popupHomeLanguage").innerText = button.getAttribute("data-home-language");
+        document.getElementById("popupHomeLanguage").innerText =
+            languageMap[button.getAttribute("data-home-language")] || button.getAttribute("data-home-language");
         fillDescriptionTable("popupHomeDescriptionTable", button.getAttribute("data-home-description"));
 
         document.getElementById("popupExternalCourse").innerText = button.getAttribute("data-external-course");
         document.getElementById("popupExternalEcts").innerText = button.getAttribute("data-external-ects");
-        document.getElementById("popupExternalLanguage").innerText = button.getAttribute("data-external-language");
+        document.getElementById("popupExternalLanguage").innerText =
+            languageMap[button.getAttribute("data-external-language")] || button.getAttribute("data-external-language");
         fillDescriptionTable("popupExternalDescriptionTable", button.getAttribute("data-external-description"));
         document.getElementById("popupExternalUniversity").innerText = button.getAttribute("data-external-university");
         document.getElementById("popupExternalFaculty").innerText = button.getAttribute("data-external-faculty");
@@ -479,6 +481,18 @@
             document.getElementById("userDropdown").classList.remove("show");
         }
     }
+
+    const languageMap = {
+        "TURKISH": "Türkçe",
+        "ENGLISH": "İngilizce"
+    };
+
+    const statusMap = {
+        "PENDING": "Beklemede",
+        "APPROVED": "Onaylandı",
+        "REJECTED": "Reddedildi",
+        "CANCELLED": "İptal Edildi"
+    };
 </script>
 
 </body>

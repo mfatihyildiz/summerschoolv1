@@ -386,6 +386,32 @@ public class ApplicationController {
         return "redirect:/applications/pending"; // Sayfayı yenile
     }
 
+    @PostMapping("/cancel/{id}")
+    public String cancelApplication(final @PathVariable Long id, final HttpSession session, final RedirectAttributes redirectAttributes) {
+
+        String redirect = checkStudentAccess(session, redirectAttributes);
+        if (redirect != null) return redirect;
+
+        Application application = applicationRepo.findById(id).orElseThrow(() -> new RuntimeException("Başvuru bulunamadı!"));
+
+        Student student = (Student) session.getAttribute("student");
+
+        // Başvurunun gerçekten öğrenciye ait olup olmadığını kontrol et
+        if (student == null || !application.getStudent().getStudentId().equals(student.getStudentId())) {
+            throw new RuntimeException("Bu başvuruyu iptal etme yetkiniz yok!");
+        }
+
+        // Başvuru zaten onaylandı veya reddedildiyse iptal edilemez
+        if (application.getStatus() == ApplicationStatus.APPROVED || application.getStatus() == ApplicationStatus.REJECTED) {
+            throw new RuntimeException("Onaylanmış veya reddedilmiş başvurular iptal edilemez!");
+        }
+
+        application.setStatus(ApplicationStatus.CANCELLED);
+        applicationRepo.save(application);
+
+        return "redirect:/applications/my-applications";
+    }
+
     @PostMapping("/reject-approved/{id}")
     public String rejectApprovedApplication(@PathVariable Long id, final HttpSession session, final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);

@@ -255,7 +255,6 @@
                 <p><strong>ECTS:</strong> <span id="homeCourseEcts" th:text="${homeCourse?.ects}"></span></p>
                 <p><strong>Dil:</strong> <span id="homeCourseLanguage" th:text="${homeCourse?.language}"></span></p>
 
-                <!-- HomeCourse İçeriği -->
                 <h4>Ders İçeriği</h4>
                 <ul>
                     <li th:each="content, iterStat : ${#strings.arraySplit(homeCourse?.description, '|')}">
@@ -272,7 +271,6 @@
                 <p><strong>ECTS:</strong> <span id="externalCourseEcts" th:text="${externalCourse?.ects}"></span></p>
                 <p><strong>Dil:</strong> <span id="externalCourseLanguage" th:text="${externalCourse?.language}"></span></p>
 
-                <!-- ExternalCourse İçeriği -->
                 <h4>Ders İçeriği</h4>
                 <ul>
                     <li th:each="content, iterStat : ${#strings.arraySplit(externalCourse?.description, '|')}">
@@ -365,6 +363,26 @@
             document.getElementById("userDropdown").classList.remove("show");
         }
     }
+
+    const languageMap = {
+        "TURKISH": "Türkçe",
+        "ENGLISH": "İngilizce"
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const homeLang = document.getElementById("homeCourseLanguage");
+        const externalLang = document.getElementById("externalCourseLanguage");
+
+        if (homeLang) {
+            const raw = homeLang.innerText.trim();
+            homeLang.innerText = languageMap[raw] || raw;
+        }
+
+        if (externalLang) {
+            const raw = externalLang.innerText.trim();
+            externalLang.innerText = languageMap[raw] || raw;
+        }
+    });
 </script>
 
 </body>
