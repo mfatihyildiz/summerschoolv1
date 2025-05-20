@@ -224,7 +224,7 @@
 
     <!-- Ders Seçim Formu -->
     <form th:action="@{/applications/step2}" method="post">
-        <label for="homeCourseId">Seçilen Üniversite Dersi:</label>
+        <label for="homeCourseId">Sakarya Üniversitesi Saydırılacak Ders:</label>
         <select id="homeCourseId" name="selectedCourseId">
             <option value="" disabled selected>Bir ders seçin</option>
             <option th:each="course : ${homeCourses}"

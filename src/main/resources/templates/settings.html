@@ -286,8 +286,8 @@
             <tr>
                 <th>ID</th>
                 <th>Student</th>
-                <th>Home Course</th>
-                <th>External Course</th>
+                <th>Sakarya Üniversitesi Saydırılacak Ders</th>
+                <th>Dışarıdan Alınacak Ders</th>
                 <th>Status</th>
                 <th>Submission Date</th>
                 <th>Actions</th>
@@ -307,7 +307,7 @@
                     <span th:case="'CANCELLED'">İptal Edildi</span>
                     <span th:case="*">Bilinmiyor</span>
                 </td>
-                <td th:text="${app.submissionDate}"></td>
+                <td class="submission-date" th:text="${app.submissionDate}"></td>
                 <td>
                     <button type="button" class="details-btn"
                             th:data-application-id="${app.applicationId}"
@@ -364,12 +364,12 @@
 
             <hr>
 
-            <h3>Home Course Detayları</h3>
+            <h3>Sakarya Üniversitesi Saydırılacak Ders Detayları</h3>
             <p><strong>Adı:</strong> <span id="modalHomeCourseName"></span></p>
             <p><strong>ECTS:</strong> <span id="modalHomeCourseEcts"></span></p>
             <p><strong>Dil:</strong> <span id="modalHomeCourseLanguage"></span></p>
 
-            <h4>Home Course İçeriği:</h4>
+            <h4>Ders İçeriği:</h4>
             <table>
                 <thead>
                 <tr><th>Hafta</th><th>İçerik</th></tr>
@@ -379,7 +379,7 @@
 
             <hr>
 
-            <h3>External Course Detayları</h3>
+            <h3>Dışarıdan Alınacak Ders Detayları</h3>
             <p><strong>Adı:</strong> <span id="modalExternalCourseName"></span></p>
             <p><strong>ECTS:</strong> <span id="modalExternalCourseEcts"></span></p>
             <p><strong>Dil:</strong> <span id="modalExternalCourseLanguage"></span></p>
@@ -387,7 +387,7 @@
             <p><strong>Fakülte:</strong> <span id="modalExternalCourseFaculty"></span></p>
             <p><strong>Bölüm:</strong> <span id="modalExternalCourseDepartment"></span></p>
 
-            <h4>External Course İçeriği:</h4>
+            <h4>Ders İçeriği:</h4>
             <table>
                 <thead>
                 <tr><th>Hafta</th><th>İçerik</th></tr>
@@ -536,7 +536,7 @@
 
     <!-- ExternalCourse -->
     <div id="ExternalCourse" class="tab-content">
-        <h3>External Course Tablosu</h3>
+        <h3>Dışarıdan Alınacak Ders Tablosu</h3>
         <table>
             <thead>
             <tr>
@@ -587,7 +587,7 @@
     <div id="externalCoursePopup" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeExternalPopup()">&times;</span>
-            <h2>External Course Detayları</h2>
+            <h2>Dışarıdan Alınacak Ders Detayları</h2>
             <p><strong>Ders Adı:</strong> <span id="popupExternalCourseName"></span></p>
             <p><strong>Üniversite:</strong> <span id="popupExternalUniversityName"></span></p>
             <p><strong>Fakülte:</strong> <span id="popupExternalFacultyName"></span></p>
@@ -713,7 +713,7 @@
 
     <!-- HomeCourse -->
     <div id="HomeCourse" class="tab-content">
-        <h3>Home Course Tablosu</h3>
+        <h3>Sakarya Üniversitesi Saydırılacak Ders Tablosu</h3>
         <table>
             <thead>
             <tr>
@@ -782,7 +782,7 @@
         </table>
 
         <div th:if="${role == 'ADMIN'}">
-            <h4>Yeni Home Course Ekle</h4>
+            <h4>Yeni Sakarya Üniversitesi Saydırılacak Ders Ekle</h4>
             <form id="homeCourseForm" action="/settings/add-home-course" method="post">
                 <label for="HomeCourseName">Ders Adı</label>
                 <input type="text" id="HomeCourseName" name="courseName" placeholder="Ders Adı" required>
@@ -838,7 +838,7 @@
     <div id="homeCoursePopup" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeHomeCoursePopup()">&times;</span>
-            <h2>Home Course Detayları</h2>
+            <h2>Sakarya Üniversitesi Saydırılacak Ders Detayları</h2>
             <p><strong>Ders Adı:</strong> <span id="popupHomeCourseName"></span></p>
             <p><strong>ECTS:</strong> <span id="popupHomeEcts"></span></p>
             <p><strong>Language:</strong> <span id="popupHomeLanguage"></span></p>
@@ -1082,6 +1082,20 @@
             document.getElementById("userDropdown").classList.remove("show");
         }
     }
+
+    function formatToDayMonthYear(dateStr) {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        return `${day}.${month}.${year}`;
+    }
+
+    document.querySelectorAll('.submission-date').forEach(function(cell) {
+        const originalDate = cell.innerText.trim();
+        if (originalDate && originalDate.includes('-')) {
+            const [year, month, day] = originalDate.split("-");
+            cell.innerText = `${day}.${month}.${year}`;
+        }
+    });
 
     const languageMap = {
         "TURKISH": "Türkçe",

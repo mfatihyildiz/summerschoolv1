@@ -275,8 +275,8 @@
     <table>
         <thead>
         <tr>
-            <th>Home Course</th>
-            <th>External Course</th>
+            <th>Sakarya Üniversitesi Saydırılacak Ders</th>
+            <th>Dışarıdan Alınacak Ders</th>
             <th>Durum</th>
             <th>Başvuru Tarihi</th>
             <th>Detaylar</th>
@@ -294,7 +294,7 @@
                 <span th:case="'CANCELLED'">İptal Edildi</span>
                 <span th:case="*">Bilinmiyor</span>
             </td>
-            <td th:text="${app.submissionDate}"></td>
+            <td class="submission-date" th:text="${app.submissionDate}"></td>
             <td>
                 <button class="details-btn" onclick="showDetails(this)"
                         th:data-application-id="${app.applicationId}"
@@ -337,7 +337,7 @@
         <div class="details-container">
             <!-- Home Course Bilgileri -->
             <div class="column">
-                <h3>Home Course</h3>
+                <h3>Sakarya Üniversitesi Saydırılacak Ders</h3>
                 <p><strong>Ders Adı:</strong> <span id="popupHomeCourse"></span></p>
                 <p><strong>ECTS:</strong> <span id="popupHomeEcts"></span></p>
                 <p><strong>Dil:</strong> <span id="popupHomeLanguage"></span></p>
@@ -358,7 +358,7 @@
 
             <!-- External Course Bilgileri -->
             <div class="column">
-                <h3>External Course</h3>
+                <h3>Dışarıdan Alınacak Ders</h3>
                 <p><strong>Ders Adı:</strong> <span id="popupExternalCourse"></span></p>
                 <p><strong>ECTS:</strong> <span id="popupExternalEcts"></span></p>
                 <p><strong>Dil:</strong> <span id="popupExternalLanguage"></span></p>
@@ -424,7 +424,9 @@
         fillDescriptionTable("popupExternalDescriptionTable", button.getAttribute("data-external-description"));
 
         // Başvuru Durumu ve Tarihi
-        document.getElementById("popupSubmissionDate").innerText = button.getAttribute("data-submission-date");
+        const rawDate = button.getAttribute("data-submission-date");
+        const formattedDate = formatToDayMonthYear(rawDate);
+        document.getElementById("popupSubmissionDate").innerText = formattedDate;
 
         // Reddetme Formu
         document.getElementById("rejectForm").action = "/applications/reject-approved/" + applicationId;
@@ -501,6 +503,20 @@
             document.getElementById("userDropdown").classList.remove("show");
         }
     }
+
+    function formatToDayMonthYear(dateStr) {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        return `${day}.${month}.${year}`;
+    }
+
+    document.querySelectorAll('.submission-date').forEach(function(cell) {
+        const originalDate = cell.innerText.trim();
+        if (originalDate && originalDate.includes('-')) {
+            const [year, month, day] = originalDate.split("-");
+            cell.innerText = `${day}.${month}.${year}`;
+        }
+    });
 
     const languageMap = {
         "TURKISH": "Türkçe",
