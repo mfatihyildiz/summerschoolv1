@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reddedilen Başvurular</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: visible !important;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; /* merkeze değil, iki uca yasla */
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #555;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h2 {
+            color: #d9534f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .details-button {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .details-button:hover {
+            background-color: #b52b27;
+        }
+
+        /* Modal Stili */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        /* Pop-up içeriği için scroll ekleme */
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 60%;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 80vh; /* Pop-up'ın ekranın %80'inden uzun olmamasını sağlar */
+            overflow-y: auto; /* İçerik fazla olursa dikey kaydırma */
+        }
+
+        .close {
+            color: red;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .details-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        .column {
+            width: 48%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .column table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: auto;
+        }
+
+        .column th, .column td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .column th:nth-child(1),
+        .column td:nth-child(1) {
+            width: 120px;
+            min-width: 120px;
+            max-width: 150px;
+            text-align: center;
+        }
+
+        .column th:nth-child(2),
+        .column td:nth-child(2) {
+            width: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .approve-btn {
+            background-color: green;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .approve-btn:hover {
+            background-color: darkgreen;
+        }
+
+        .dropdown {
+            margin-left: auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropbtn {
+            background-color: #007bff; /* Mavi arka plan */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropbtn:hover {
+            background-color: #0056b3; /* Hover rengi */
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Kullanıcının rolünü saklayan gizli bir alan -->
+<input type="hidden" id="userRole" th:value="${role}"/>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div>
+        <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE' || role == 'ADMIN'}">Dashboard</a>
+        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT' || role == 'ADMIN'}"
+           th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
+           th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
+           onclick="return checkApplicationPeriod();">
+            Başvuru Yap
+        </a>
+        <a href="/applications/my-applications" th:if="${role == 'STUDENT' || role == 'ADMIN'}">Başvurularım</a>
+        <a href="/applications/pending" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Bekleyen Başvurular</a>
+        <a href="/applications/approved" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Onaylanan Başvurular</a>
+        <a href="/applications/rejected" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Reddedilen Başvurular</a>
+        <a href="/settings" th:if="${role == 'COMMITTEE'|| role == 'ADMIN'}">Ayarlar</a>
+    </div>
+
+    <div class="dropdown" style="margin-left:auto; position: relative;">
+        <button class="dropbtn" onclick="toggleDropdown()" id="userDropdownBtn">
+            <span id="usernameText" th:text="${user.username}">Kullanıcı</span> &#9662;
+        </button>
+        <div id="userDropdown" class="dropdown-content">
+            <a href="/profile">Profil Sayfası</a>
+            <a href="/change-password">Şifre Değiştir</a>
+            <a href="/logout">Çıkış Yap</a>
+        </div>
+    </div>
+</div>
+
+<!-- Hata mesajını göster -->
+<div class="alert" th:if="${errorMessage}" id="errorAlert">
+    <span th:text="${errorMessage}"></span>
+    <span class="close-btn" onclick="closeAlert()">&times;</span>
+</div>
+<div class="container">
+    <h2>Reddedilen Başvurular</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Sakarya Üniversitesi Saydırılacak Ders</th>
+            <th>Dışarıdan Alınacak Ders</th>
+            <th>Başvuru Tarihi</th>
+            <th>Detaylar</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="app : ${rejectedApplications}">
+            <td th:text="${app.homeCourse.courseName}"></td>
+            <td th:text="${app.externalCourse.courseName}"></td>
+            <td class="submission-date" th:text="${app.submissionDate}"></td>
+            <td>
+                <button class="details-button" onclick="showDetails(this)"
+                        th:data-application-id="${app.applicationId}"
+                        th:data-student-name="${app.student.name}"
+                        th:data-student-surname="${app.student.surname}"
+                        th:data-student-number="${app.student.studentNumber}"
+                        th:data-home-course="${app.homeCourse.courseName}"
+                        th:data-home-ects="${app.homeCourse.ects}"
+                        th:data-home-language="${app.homeCourse.language}"
+                        th:data-home-description="${app.homeCourse.description}"
+
+                        th:data-external-course="${app.externalCourse.courseName}"
+                        th:data-external-ects="${app.externalCourse.ects}"
+                        th:data-external-language="${app.externalCourse.language}"
+                        th:data-external-description="${app.externalCourse.description}"
+                        th:data-external-university="${app.externalCourse.university.universityName}"
+                        th:data-external-faculty="${app.externalCourse.university.facultyName}"
+                        th:data-external-department="${app.externalCourse.university.departmentName}"
+
+                        th:data-submission-date="${app.submissionDate}">
+                    Detayları Göster
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Pop-up İçeriği -->
+<div id="detailsPopup" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closePopup()">&times;</span>
+        <h2>Başvuru Detayları</h2>
+
+        <div id="studentInfoSection">
+            <h3>Öğrenci Bilgileri</h3>
+            <p><strong>Adı:</strong> <span id="popupStudentName"></span></p>
+            <p><strong>Soyadı:</strong> <span id="popupStudentSurname"></span></p>
+            <p><strong>Öğrenci Numarası:</strong> <span id="popupStudentNumber"></span></p>
+        </div>
+
+        <div class="details-container">
+            <div class="column">
+                <h3>Sakarya Üniversitesi Saydırılacak Ders</h3>
+                <p><strong>Ders Adı:</strong> <span id="popupHomeCourse"></span></p>
+                <p><strong>ECTS:</strong> <span id="popupHomeEcts"></span></p>
+                <p><strong>Dil:</strong> <span id="popupHomeLanguage"></span></p>
+                <h4>Ders İçeriği</h4>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Hafta</th>
+                        <th>İçerik</th>
+                    </tr>
+                    </thead>
+                    <tbody id="popupHomeDescriptionTable"></tbody>
+                </table>
+            </div>
+
+            <div class="column">
+                <h3>Dışarıdan Alınacak Ders</h3>
+                <p><strong>Ders Adı:</strong> <span id="popupExternalCourse"></span></p>
+                <p><strong>ECTS:</strong> <span id="popupExternalEcts"></span></p>
+                <p><strong>Dil:</strong> <span id="popupExternalLanguage"></span></p>
+                <p><strong>Üniversite:</strong> <span id="popupExternalUniversity"></span></p>
+                <p><strong>Fakülte:</strong> <span id="popupExternalFaculty"></span></p>
+                <p><strong>Bölüm:</strong> <span id="popupExternalDepartment"></span></p>
+                <h4>Ders İçeriği</h4>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Hafta</th>
+                        <th>İçerik</th>
+                    </tr>
+                    </thead>
+                    <tbody id="popupExternalDescriptionTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bottom-container">
+            <p><strong>Başvuru Tarihi:</strong> <span id="popupSubmissionDate"></span></p>
+
+            <div class="button-container">
+                <form id="approveForm" method="post">
+                    <button type="submit" class="approve-btn" onclick="confirmAction(event, this)">
+                        Başvuruyu Onayla
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function showDetails(button) {
+        let applicationId = button.getAttribute("data-application-id");
+
+        document.getElementById("popupStudentName").innerText = button.getAttribute("data-student-name");
+        document.getElementById("popupStudentSurname").innerText = button.getAttribute("data-student-surname");
+        document.getElementById("popupStudentNumber").innerText = button.getAttribute("data-student-number");
+
+        // Home Course Bilgileri
+        document.getElementById("popupHomeCourse").innerText = button.getAttribute("data-home-course");
+        document.getElementById("popupHomeEcts").innerText = button.getAttribute("data-home-ects");
+        document.getElementById("popupHomeLanguage").innerText =
+            languageMap[button.getAttribute("data-home-language")] || button.getAttribute("data-home-language");
+
+        // External Course Bilgileri
+        document.getElementById("popupExternalCourse").innerText = button.getAttribute("data-external-course");
+        document.getElementById("popupExternalEcts").innerText = button.getAttribute("data-external-ects");
+        document.getElementById("popupExternalLanguage").innerText =
+            languageMap[button.getAttribute("data-external-language")] || button.getAttribute("data-external-language");
+        document.getElementById("popupExternalUniversity").innerText = button.getAttribute("data-external-university");
+        document.getElementById("popupExternalFaculty").innerText = button.getAttribute("data-external-faculty");
+        document.getElementById("popupExternalDepartment").innerText = button.getAttribute("data-external-department");
+
+        // Haftalık İçeriği Tabloya Ekleme
+        fillDescriptionTable("popupHomeDescriptionTable", button.getAttribute("data-home-description"));
+        fillDescriptionTable("popupExternalDescriptionTable", button.getAttribute("data-external-description"));
+
+        // Başvuru Durumu ve Tarihi
+        const rawDate = button.getAttribute("data-submission-date");
+        const formattedDate = formatToDayMonthYear(rawDate);
+        document.getElementById("popupSubmissionDate").innerText = formattedDate;
+
+        // Reddetme Formu
+        document.getElementById("approveForm").action = "/applications/approve-rejected/" + applicationId;
+
+        document.getElementById("detailsPopup").style.display = "block";
+    }
+
+    // Haftalık İçeriği Tabloya Bölüp Gösterme
+    function fillDescriptionTable(tableId, description) {
+        const tableBody = document.getElementById(tableId);
+        tableBody.innerHTML = "";  // Önceki verileri temizle
+
+        if (description) {
+            const weeks = description.split(" | "); // Haftalara ayır
+            weeks.forEach((weekContent, index) => {
+                let row = tableBody.insertRow();
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                cell1.innerText = `Hafta ${index + 1}`;
+                cell2.innerText = weekContent.trim() || "Boş"; // İçeriği temizleyip ekliyoruz
+            });
+        }
+    }
+
+    function closePopup() {
+        document.getElementById("detailsPopup").style.display = "none";
+    }
+
+    function closeAlert() {
+        document.getElementById("errorAlert").style.display = "none";
+    }
+
+    window.onload = function () {
+        let role = document.getElementById("userRole").value;
+
+        if (role !== "COMMITTEE" && role !== "ADMIN") {
+            alert("Yetkisiz erişim! Sadece komite üyeleri erişebilir.");
+            window.location.href = (role === "STUDENT") ? "/dashboard" : "/login";
+        }
+
+        let showErrorPopup = /*[[${showErrorPopup}]]*/ false;
+        if (showErrorPopup) {
+            document.getElementById("errorPopup").style.display = "block";
+        }
+
+        let isApplicationPeriod = document.getElementById("isApplicationPeriod").getAttribute("data-application-period") === "true";
+        let isPreviewMode = document.getElementById("isPreviewMode").getAttribute("data-preview-mode") === "true";
+
+        // Eğer başvuru dönemi değilse kullanıcı dashboard'a yönlendirilecek
+        if (!isApplicationPeriod && !isPreviewMode) {
+            alert("Başvuru süreci kapalı! Dashboard'a yönlendiriliyorsunuz.");
+            window.location.href = "/dashboard";
+        }
+    };
+
+    function confirmAction(event, button) {
+        event.preventDefault();  // Sayfanın hemen yönlendirilmesini engelle
+
+        let actionText = button.classList.contains("approve-btn") ? "onaylamak" : "reddetmek";
+
+        if (confirm(`Bu başvuruyu ${actionText} istediğinize emin misiniz?`)) {
+            button.closest("form").submit(); // Kullanıcı onayladıysa formu gönder
+        }
+    }
+
+    function toggleDropdown() {
+        document.getElementById("userDropdown").classList.toggle("show");
+    }
+
+    // Sayfanın herhangi bir yerine tıklanırsa menüyü kapat
+    window.onclick = function (event) {
+        const button = document.getElementById("userDropdownBtn");
+        if (!button.contains(event.target)) {
+            document.getElementById("userDropdown").classList.remove("show");
+        }
+    }
+
+    function formatToDayMonthYear(dateStr) {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        return `${day}.${month}.${year}`;
+    }
+
+    document.querySelectorAll('.submission-date').forEach(function(cell) {
+        const originalDate = cell.innerText.trim();
+        if (originalDate && originalDate.includes('-')) {
+            const [year, month, day] = originalDate.split("-");
+            cell.innerText = `${day}.${month}.${year}`;
+        }
+    });
+
+    const languageMap = {
+        "TURKISH": "Türkçe",
+        "ENGLISH": "İngilizce"
+    };
+</script>
+
+</body>
+</html>

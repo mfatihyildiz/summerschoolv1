@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dışarıdan Alınacak Ders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: visible !important;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; /* merkeze değil, iki uca yasla */
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #555;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+
+        h2 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            text-align: left;
+            display: block;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        select, input, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            transition: 0.3s;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            border-color: #007bff;
+            background-color: white;
+            outline: none;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Ders Ekleme Alanı */
+        #addCourseForm {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        #addCourseForm h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* İptal Butonu */
+        .cancel-btn {
+            background-color: red;
+            color: white;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .cancel-btn:hover {
+            background-color: darkred;
+        }
+
+        /* Devam Et Butonu */
+        .continue-btn {
+            background-color: #28a745;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .continue-btn:hover {
+            background-color: #218838;
+        }
+
+        .dropdown {
+            margin-left: auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropbtn {
+            background-color: #007bff; /* Mavi arka plan */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropbtn:hover {
+            background-color: #0056b3; /* Hover rengi */
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Kullanıcının rolü ve başvuru tarihleri kontrolü -->
+<input type="hidden" id="userRole" th:value="${role}"/>
+<input type="hidden" id="isApplicationPeriod" th:attr="data-application-period=${isApplicationPeriod}"/>
+<input type="hidden" id="isPreviewMode" th:attr="data-preview-mode=${isPreviewMode}"/>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div>
+        <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE' || role == 'ADMIN'}">Dashboard</a>
+        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT' || role == 'ADMIN'}"
+           th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
+           th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
+           onclick="return checkApplicationPeriod();">
+            Başvuru Yap
+        </a>
+        <a href="/applications/my-applications" th:if="${role == 'STUDENT' || role == 'ADMIN'}">Başvurularım</a>
+        <a href="/applications/pending" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Bekleyen Başvurular</a>
+        <a href="/applications/approved" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Onaylanan Başvurular</a>
+        <a href="/applications/rejected" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Reddedilen Başvurular</a>
+        <a href="/settings" th:if="${role == 'COMMITTEE'|| role == 'ADMIN'}">Ayarlar</a>
+    </div>
+
+    <div class="dropdown" style="margin-left:auto; position: relative;">
+        <button class="dropbtn" onclick="toggleDropdown()" id="userDropdownBtn">
+            <span id="usernameText" th:text="${user.username}">Kullanıcı</span> &#9662;
+        </button>
+        <div id="userDropdown" class="dropdown-content">
+            <a href="/profile">Profil Sayfası</a>
+            <a href="/change-password">Şifre Değiştir</a>
+            <a href="/logout">Çıkış Yap</a>
+        </div>
+    </div>
+</div>
+
+<!-- Hata mesajını göster -->
+<div class="alert" th:if="${errorMessage}" id="errorAlert">
+    <span th:text="${errorMessage}"></span>
+    <span class="close-btn" onclick="closeAlert()">&times;</span>
+</div>
+
+<div class="container">
+    <h2>Dışarıdan Alınacak Ders</h2>
+
+    <form>
+        <label for="universityName">Üniversite:</label>
+        <select id="universityName" onchange="loadFaculties()" required>
+            <option value="">Bir üniversite seçin</option>
+            <option th:each="name : ${universityNames}" th:value="${name}" th:text="${name}">Üniversite Seç</option>
+        </select>
+
+        <label for="facultyName">Fakülte:</label>
+        <select id="facultyName" onchange="loadDepartments()" required>
+            <option value="">Fakülte Seçin</option>
+        </select>
+
+        <label for="departmentName">Bölüm:</label>
+        <select id="departmentName" onchange="loadCourses()" required>
+            <option value="">Bölüm Seçin</option>
+        </select>
+
+        <label for="courseName">Ders:</label>
+        <select id="courseName" onchange="setExternalCourseId()" required>
+            <option value="">Ders Seçin</option>
+            <option th:each="course : ${courses}"
+                    th:value="${course.externalCourseId}"
+                    th:text="${course.courseName}">Ders
+            </option>
+        </select>
+    </form>
+
+    <button onclick="document.getElementById('addCourseForm').style.display='block'">Ders Ekle & Güncelle</button>
+    <div id="addCourseForm" style="display:none;">
+        <h3>Yeni Ders Bilgileri</h3>
+
+        <div style="background-color:#e9f3ff; padding: 15px; border-left: 5px solid #007bff; border-radius: 4px; margin-bottom: 15px;">
+            <strong>Yeni Ders Ekleme:</strong><br>
+            Yeni ders eklemek için: <br>
+            Aşağıdaki tüm alanları eksiksiz ve kısaltma kullanmadan doldurun. Ardından "Yeni Ders Ekle" butonuna tıklayın. <br>
+            Eğer ders almak istediğiniz üniversite sistemde kayıtlı değil ise "Üniversite Ekle" butonuna tıklayıp tüm alanları eksiksiz ve kısaltma kullanmadan doldurun.
+        </div>
+
+        <div style="background-color:#fff3cd; padding: 15px; border-left: 5px solid #ffc107; border-radius: 4px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>Ders Güncelleme:</strong><br>
+                Ders güncellemek için öncelikle yukarıdan güncellemek istediğiniz dersi seçin. Ardından "Seçilen Dersi Düzenle" butonuna tıklayın. Güncellemek istediğiniz alanları tam ve eksiksiz bir şekilde güncelleyin. Son olarak "Güncellenmiş Dersi Kaydet" butonuna tıklayın.<br>
+                <strong>Not:</strong> Ders güncellerken üniversite, fakülte, bölüm ve ders adı alanlarını değiştiremezsiniz. Bu alanlarda değişiklik yapmak istiyorsanız yeni bir ders ekleyin.
+            </div>
+            <button type="button" onclick="populateEditForm()" style="margin-left: 20px; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Seçilen Dersi Düzenle</button>
+        </div>
+
+        <label for="newUniversityName">Üniversite:</label>
+        <select id="newUniversityName" name="newUniversityName" onchange="loadNewFaculties()" required>
+            <option value="">Bir üniversite seçin</option>
+            <option th:each="name : ${universityNames}"
+                    th:value="${name}"
+                    th:text="${name}">Üniversite Seç
+            </option>
+        </select><br>
+
+        <label for="newFacultyName">Fakülte:</label>
+        <select id="newFacultyName" name="newFacultyName" onchange="loadNewDepartments()" required>
+            <option value="">Fakülte Seçin</option>
+        </select><br>
+
+        <label for="newDepartmentName">Bölüm:</label>
+        <select id="newDepartmentName" name="newDepartmentName" required>
+            <option value="">Bölüm Seçin</option>
+        </select><br>
+
+        <label for="newCourseName">Ders Adı:</label>
+        <input type="text" id="newCourseName" required><br>
+
+        <label for="newCourseEcts">ECTS:</label>
+        <input type="number" id="newCourseEcts" required><br>
+
+        <label for="newCourseLanguage">Dil:</label>
+        <select id="newCourseLanguage" required>
+            <option value="TURKISH">Türkçe</option>
+            <option value="ENGLISH">İngilizce</option>
+        </select><br>
+
+        <label for="newCourseTheoreticalHours">Teorik Saat:</label>
+        <input type="number" id="newCourseTheoreticalHours" required><br>
+
+        <label for="newCoursePracticalHours">Pratik Saat:</label>
+        <input type="number" id="newCoursePracticalHours" required><br>
+
+        <h3>Ders İçeriği</h3>
+        <div id="weeklyDescriptions">
+            <script>
+                for (let i = 1; i <= 14; i++) {
+                    document.write('<label for="week' + i + '"> ' + i + '. Hafta:</label>');
+                    document.write('<textarea id="week' + i + '" class="week-description" rows="2"></textarea><br>');
+                }
+            </script>
+        </div>
+
+        <button type="button" onclick="addNewCourse()">Yeni Ders Ekle</button>
+        <button type="button" id="saveEditedCourseButton" style="display:none;" onclick="saveEditedCourse()">Güncellenmiş Dersi Kaydet</button>
+        <button type="button" class="cancel-btn"
+                onclick="document.getElementById('addCourseForm').style.display='none'">İptal
+        </button>
+    </div>
+
+    <!-- Üniversite Ekleme Butonu -->
+    <button onclick="document.getElementById('addUniversityForm').style.display='block'">Üniversite Ekle</button>
+
+    <!-- Üniversite Ekleme Formu -->
+    <div id="addUniversityForm"
+         style="display:none; margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; text-align:left;">
+        <h3>Yeni Üniversite Bilgileri</h3>
+
+        <label for="universityNameInput">Üniversite Adı:</label>
+        <input type="text" id="universityNameInput" required><br>
+
+        <label for="facultyNameInput">Fakülte Adı:</label>
+        <input type="text" id="facultyNameInput" required><br>
+
+        <label for="departmentNameInput">Bölüm Adı:</label>
+        <input type="text" id="departmentNameInput" required><br>
+
+        <button type="button" onclick="addNewUniversity()">Üniversiteyi Ekle</button>
+        <button type="button" class="cancel-btn"
+                onclick="document.getElementById('addUniversityForm').style.display='none'">İptal
+        </button>
+    </div>
+
+    <!-- Devam Et Tuşu -->
+    <form id="applicationForm" th:action="@{/applications/set-external-course}" method="post">
+        <input type="hidden" id="homeCourseId" name="homeCourseId" th:value="${homeCourseId}"/>
+        <input type="hidden" id="externalCourseId" name="externalCourseId"/>
+        <button type="button" class="continue-btn" onclick="redirectToConfirmation()">Devam Et</button>
+    </form>
+</div>
+<script>
+    async function fetchOptions(endpoint, params = {}) {
+        const url = new URL(endpoint, window.location.origin);
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+        const response = await fetch(url);
+        return response.json();
+    }
+
+    // loadFaculties fonksiyonunu doğrudan tanımlıyoruz
+    async function loadFaculties() {
+        const universityName = document.getElementById('universityName').value;
+        const facultySelect = document.getElementById('facultyName');
+
+        facultySelect.innerHTML = '<option value="">Fakülte Seçin</option>';
+
+        if (universityName) {
+            const faculties = await fetchOptions('/university/faculties', {universityName});
+
+            faculties.forEach(faculty => {
+                const option = document.createElement('option');
+                option.value = faculty;
+                option.textContent = faculty;
+                facultySelect.appendChild(option);
+            });
+        }
+    }
+
+    // HTML içindeki onchange çağrılarını algılaması için global değişken olarak tanımlıyoruz
+    window.loadFaculties = loadFaculties;
+    window.loadDepartments = loadDepartments;
+    window.loadCourses = loadCourses;
+    window.loadNewFaculties = loadNewFaculties;
+    window.loadNewDepartments = loadNewDepartments;
+
+    async function loadDepartments() {
+        const universityName = document.getElementById('universityName').value;
+        const facultyName = document.getElementById('facultyName').value;
+
+        const departmentSelect = document.getElementById('departmentName');
+        const courseSelect = document.getElementById('courseName');
+
+        departmentSelect.innerHTML = '<option value="">Bölüm Seçin</option>';
+        courseSelect.innerHTML = '<option value="">Ders Seçin</option>';
+
+        if (universityName && facultyName) {
+            const departments = await fetchOptions('/university/departments', {universityName, facultyName});
+            departments.forEach(department => {
+                const option = document.createElement('option');
+                option.value = department;
+                option.textContent = department;
+                departmentSelect.appendChild(option);
+            });
+        }
+    }
+
+    async function loadCourses() {
+        const universityName = document.getElementById('universityName').value;
+        const facultyName = document.getElementById('facultyName').value;
+        const departmentName = document.getElementById('departmentName').value;
+
+        const courseSelect = document.getElementById('courseName');
+        courseSelect.innerHTML = '<option value="">Ders Seçin</option>';
+
+        if (universityName && facultyName && departmentName) {
+            try {
+                const response = await fetch(`/external/courses?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}`);
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    alert(errorMessage);
+                    return;
+                }
+
+                const courses = await response.json();
+                courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course;
+                    option.textContent = course;
+                    courseSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                alert('Dersler yüklenirken bir hata oluştu.');
+            }
+        } else {
+            alert("Lütfen üniversite, fakülte ve bölüm seçiniz.");
+        }
+    }
+
+    async function loadNewFaculties() {
+        const universityName = document.getElementById('newUniversityName').value;
+
+        const facultySelect = document.getElementById('newFacultyName');
+        const departmentSelect = document.getElementById('newDepartmentName');
+
+        facultySelect.innerHTML = '<option value="">Fakülte Seçin</option>';
+        departmentSelect.innerHTML = '<option value="">Bölüm Seçin</option>';
+
+        if (universityName) {
+            const faculties = await fetchOptions('/university/faculties', {universityName});
+            faculties.forEach(faculty => {
+                const option = document.createElement('option');
+                option.value = faculty;
+                option.textContent = faculty;
+                facultySelect.appendChild(option);
+            });
+        }
+    }
+
+    async function loadNewDepartments() {
+        const universityName = document.getElementById('newUniversityName').value;
+        const facultyName = document.getElementById('newFacultyName').value;
+
+        const departmentSelect = document.getElementById('newDepartmentName');
+        departmentSelect.innerHTML = '<option value="">Bölüm Seçin</option>';
+
+        if (universityName && facultyName) {
+            const departments = await fetchOptions('/university/departments', {universityName, facultyName});
+            departments.forEach(department => {
+                const option = document.createElement('option');
+                option.value = department;
+                option.textContent = department;
+                departmentSelect.appendChild(option);
+            });
+        }
+    }
+
+    async function addNewCourse() {
+        const universityName = document.getElementById('newUniversityName').value; // Dropdown'dan gelen
+        const facultyName = document.getElementById('newFacultyName').value; // Dropdown'dan gelen
+        const departmentName = document.getElementById('newDepartmentName').value; // Dropdown'dan gelen
+        const courseName = document.getElementById('newCourseName').value.trim(); // Kullanıcıdan gelen
+        const ects = document.getElementById('newCourseEcts').value.trim(); // Kullanıcıdan gelen
+        const language = document.getElementById('newCourseLanguage').value.trim(); // Kullanıcıdan gelen
+        const theoreticalHours = document.getElementById('newCourseTheoreticalHours').value.trim(); // Kullanıcıdan gelen
+        const practicalHours = document.getElementById('newCoursePracticalHours').value.trim(); // Kullanıcıdan gelen
+        // 14 Haftalık Açıklamaları Birleştir
+        let descriptions = [];
+        for (let i = 1; i <= 14; i++) {
+            let weekDescription = document.getElementById(`week${i}`).value.trim();
+            descriptions.push(weekDescription);
+        }
+        let mergedDescription = descriptions.join(" | "); // Haftaları ayırmak için "|" ekleniyor.
+
+
+        if (!universityName || !facultyName || !departmentName || !courseName) {
+            alert("Lütfen tüm alanları doldurun.");
+            return;
+        }
+
+        // Önce aynı ders var mı kontrolü yap
+        const duplicateCheckUrl = `/external/check-duplicate-course?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}&courseName=${encodeURIComponent(courseName)}`;
+        const duplicateResponse = await fetch(duplicateCheckUrl);
+        const isDuplicate = await duplicateResponse.json();
+
+        if (isDuplicate) {
+            alert("Bu ders zaten sistemde kayıtlı! Lütfen mevcut dersi güncelleyin.");
+            return; // Eğer varsa işlem durduruluyor
+        }
+
+        // Eğer duplicate yoksa normal ders ekleme devam ediyor:
+        const responseUniversity = await fetch(`/university/find-id?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}`);
+        const universityId = responseUniversity.ok ? await responseUniversity.json() : null;
+
+        if (!universityId) {
+            alert("Üniversite bulunamadı!");
+            return;
+        }
+
+        // newCourse nesnesini oluştur
+        const newCourse = {
+            university: {
+                universityName: universityName,
+                facultyName: facultyName,
+                departmentName: departmentName
+            },
+            courseName: courseName,
+            ects: ects,
+            language: language,
+            theoreticalHours: theoreticalHours,
+            practicalHours: practicalHours,
+            description: mergedDescription
+        };
+
+        try {
+            // API'ye gönder
+            const response = await fetch('/external/add-course', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newCourse)
+            });
+
+            if (response.ok) {
+                alert('Ders başarıyla eklendi!');
+                location.reload(); // Sayfayı yenile
+            } else {
+                const error = await response.text();
+                alert('Ders eklenirken bir hata oluştu: ' + error);
+            }
+        } catch (error) {
+            console.error("Ders eklerken hata:", error);
+            alert("Bir hata oluştu.");
+        }
+    }
+
+    async function fetchExternalCourseId() {
+        const universityName = document.getElementById('universityName').value.trim();
+        const facultyName = document.getElementById('facultyName').value.trim();
+        const departmentName = document.getElementById('departmentName').value.trim();
+        const courseName = document.getElementById('courseName').value.trim();
+
+        if (!universityName || !facultyName || !departmentName || !courseName) {
+            alert("Lütfen tüm alanları doldurun.");
+            return null;
+        }
+
+        try {
+            // API'den ExternalCourseId'yi al
+            const response = await fetch(`/applications/external-course-id?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}&courseName=${encodeURIComponent(courseName)}`);
+            if (response.ok) {
+                const externalCourseId = await response.json();
+                console.log("ExternalCourseId:", externalCourseId);
+                return externalCourseId;
+            } else {
+                alert("Ders bulunamadı.");
+                return null;
+            }
+        } catch (error) {
+            console.error("ExternalCourseId alırken hata:", error);
+            alert("Bir hata oluştu.");
+            return null;
+        }
+    }
+
+    async function redirectToConfirmation() {
+        const externalCourseId = await fetchExternalCourseId(); // API çağrısı ile externalCourseId'yi al
+        if (!externalCourseId) {
+            alert("Lütfen gerekli tüm seçimleri yapın.");
+            return;
+        }
+
+        // externalCourseId'yi input alanına yaz
+        document.getElementById("externalCourseId").value = externalCourseId;
+
+        // Formu gönder
+        document.getElementById("applicationForm").submit();
+    }
+
+    document.getElementById('courseName').addEventListener('change', function () {
+        document.getElementById('externalCourseId').value = this.value; // Direkt atama yapıldı
+    });
+
+    function setExternalCourseId() {
+        document.getElementById('externalCourseId').value = document.getElementById('courseName').value; // Direkt atama yapıldı
+    }
+
+    async function addNewUniversity() {
+        const universityName = document.getElementById('universityNameInput').value.trim();
+        const facultyName = document.getElementById('facultyNameInput').value.trim();
+        const departmentName = document.getElementById('departmentNameInput').value.trim();
+
+        if (!universityName || !facultyName || !departmentName) {
+            alert("Lütfen tüm alanları doldurun.");
+            return;
+        }
+
+        const universityData = {
+            universityName: universityName,
+            facultyName: facultyName,
+            departmentName: departmentName
+        };
+
+        try {
+            const response = await fetch('/university/add-university', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(universityData)
+            });
+
+            if (response.ok) {
+                alert('Üniversite başarıyla eklendi!');
+                location.reload();
+            } else {
+                const error = await response.text();
+                alert('Üniversite eklenirken hata: ' + error);
+            }
+        } catch (error) {
+            console.error("Üniversite eklerken hata:", error);
+            alert("Bir hata oluştu.");
+        }
+    }
+
+    // Sayfa yüklendiğinde role kontrolü yap
+    window.onload = function () {
+        let role = document.getElementById("userRole").value;
+
+        if (role !== "STUDENT" && role !== "ADMIN") {
+            alert("Yetkisiz erişim! Sadece öğrenciler erişebilir.");
+            window.location.href = (role === "COMMITTEE") ? "/dashboard" : "/login";
+        }
+
+        let showErrorPopup = /*[[${showErrorPopup}]]*/ false;
+        if (showErrorPopup) {
+            document.getElementById("errorPopup").style.display = "block";
+        }
+
+        let isApplicationPeriod = document.getElementById("isApplicationPeriod").getAttribute("data-application-period") === "true";
+        let isPreviewMode = document.getElementById("isPreviewMode").getAttribute("data-preview-mode") === "true";
+
+        // Eğer başvuru dönemi değilse kullanıcı dashboard'a yönlendirilecek
+        if (!isApplicationPeriod && !isPreviewMode) {
+            alert("Başvuru süreci kapalı! Dashboard'a yönlendiriliyorsunuz.");
+            window.location.href = "/dashboard";
+        }
+    };
+
+    function checkApplicationPeriod(event) {
+        let isPreviewMode = /*[[${previewMode}]]*/ false;
+
+        if (isPreviewMode) {
+            event.preventDefault();
+            alert("Şu anda sadece dersleri görüntüleyebilirsiniz. Başvuru süreci henüz başlamadı.");
+        }
+    }
+
+    function closeAlert() {
+        document.getElementById("errorAlert").style.display = "none";
+    }
+
+    async function populateEditForm() {
+        const universityName = document.getElementById('universityName').value.trim();
+        const facultyName = document.getElementById('facultyName').value.trim();
+        const departmentName = document.getElementById('departmentName').value.trim();
+        const courseName = document.getElementById('courseName').value.trim();
+
+        if (!universityName || !facultyName || !departmentName || !courseName) {
+            alert("Lütfen tüm seçimleri yapın.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/applications/external-course-id?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}&courseName=${encodeURIComponent(courseName)}`);
+            if (response.ok) {
+                const externalCourseId = await response.json();
+                if (externalCourseId) {
+                    // Şimdi dersi detaylıca çekelim
+                    const courseResponse = await fetch(`/external/get-course-details?id=${externalCourseId}`);
+                    if (courseResponse.ok) {
+                        const course = await courseResponse.json();
+
+                        // Formları doldur
+                        document.getElementById('newUniversityName').value = universityName;
+                        await loadNewFaculties();
+                        document.getElementById('newFacultyName').value = facultyName;
+                        await loadNewDepartments();
+                        document.getElementById('newDepartmentName').value = departmentName;
+
+                        document.getElementById('newCourseName').value = course.courseName;
+                        document.getElementById('newCourseEcts').value = course.ects;
+                        document.getElementById('newCourseLanguage').value = course.language;
+                        document.getElementById('newCourseTheoreticalHours').value = course.theoreticalHours;
+                        document.getElementById('newCoursePracticalHours').value = course.practicalHours;
+
+                        const descriptions = course.description ? course.description.split(' | ') : [];
+                        for (let i = 1; i <= 14; i++) {
+                            document.getElementById(`week${i}`).value = descriptions[i-1] || "";
+                        }
+
+                        document.getElementById('saveEditedCourseButton').style.display = "inline-block"; // Kaydet butonunu aç
+                    }
+                }
+            } else {
+                alert("Ders bulunamadı.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Bir hata oluştu.");
+        }
+
+        document.getElementById('newUniversityName').disabled = true;
+        document.getElementById('newFacultyName').disabled = true;
+        document.getElementById('newDepartmentName').disabled = true;
+        document.getElementById('newCourseName').readOnly = true;
+    }
+
+    async function saveEditedCourse() {
+        const universityName = document.getElementById('newUniversityName').value.trim();
+        const facultyName = document.getElementById('newFacultyName').value.trim();
+        const departmentName = document.getElementById('newDepartmentName').value.trim();
+        const courseName = document.getElementById('newCourseName').value.trim();
+        const ects = document.getElementById('newCourseEcts').value.trim();
+        const language = document.getElementById('newCourseLanguage').value.trim();
+        const theoreticalHours = document.getElementById('newCourseTheoreticalHours').value.trim();
+        const practicalHours = document.getElementById('newCoursePracticalHours').value.trim();
+
+        // 14 haftalık açıklamaları al
+        let descriptions = [];
+        for (let i = 1; i <= 14; i++) {
+            let weekDescription = document.getElementById(`week${i}`).value.trim();
+            descriptions.push(weekDescription);
+        }
+        let mergedDescription = descriptions.join(" | ");
+
+        if (!universityName || !facultyName || !departmentName || !courseName) {
+            alert("Lütfen tüm alanları doldurun.");
+            return;
+        }
+
+        try {
+            // 1- Önce eski dersi inaktif yap
+            const responseUniversity = await fetch(`/university/find-id?universityName=${encodeURIComponent(universityName)}&facultyName=${encodeURIComponent(facultyName)}&departmentName=${encodeURIComponent(departmentName)}`);
+            const universityId = responseUniversity.ok ? await responseUniversity.json() : null;
+
+            if (!universityId) {
+                alert("Üniversite bulunamadı.");
+                return;
+            }
+
+            const deactivateResponse = await fetch(`/external/deactivate-course?universityId=${universityId}&courseName=${encodeURIComponent(courseName)}`, {
+                method: 'PUT'
+            });
+
+            if (!deactivateResponse.ok) {
+                alert("Eski ders pasif yapılamadı.");
+                return;
+            }
+
+            // 2- Yeni güncellenmiş dersi ekle
+            const newCourse = {
+                university: {
+                    universityName: universityName,
+                    facultyName: facultyName,
+                    departmentName: departmentName
+                },
+                courseName: courseName,
+                ects: ects,
+                language: language,
+                theoreticalHours: theoreticalHours,
+                practicalHours: practicalHours,
+                description: mergedDescription
+            };
+
+            const response = await fetch('/external/add-course', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newCourse)
+            });
+
+            if (response.ok) {
+                alert('Güncellenmiş ders başarıyla eklendi!');
+                location.reload();
+            } else {
+                const error = await response.text();
+                alert('Ders eklenirken bir hata oluştu: ' + error);
+            }
+        } catch (error) {
+            console.error("Ders güncellerken hata:", error);
+            alert("Bir hata oluştu.");
+        }
+    }
+
+    function toggleDropdown() {
+        document.getElementById("userDropdown").classList.toggle("show");
+    }
+
+    // Sayfanın herhangi bir yerine tıklanırsa menüyü kapat
+    window.onclick = function (event) {
+        const button = document.getElementById("userDropdownBtn");
+        if (!button.contains(event.target)) {
+            document.getElementById("userDropdown").classList.remove("show");
+        }
+    }
+</script>
+</body>
+</html>

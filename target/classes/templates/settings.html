@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Sistem Ayarları</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: visible !important;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; /* merkeze değil, iki uca yasla */
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #555;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .tab-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .tab-button:hover, .tab-button.active {
+            background-color: #0056b3;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .active-tab {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Modal Stili */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 60%;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 80vh; /* Ekran yüksekliğinin %80'ini geçmesin */
+            overflow-y: auto; /* Dikey kaydırma çubuğunu sadece modal için etkinleştir */
+        }
+
+        .column table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: auto; /* Otomatik genişlik dağılımı */
+        }
+
+        .column th, .column td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap; /* Satır kaymasını engelle */
+        }
+
+        /* "Hafta" sütununun genişliği içeriğe göre ayarlansın, ancak çok geniş olmasın */
+        .column th:nth-child(1),
+        .column td:nth-child(1) {
+            width: 120px; /* Çift haneli sayılar için yeterli genişlik */
+            min-width: 120px;
+            max-width: 150px;
+            text-align: center;
+        }
+
+        /* İçerik sütunu geri kalan alanı alsın */
+        .column th:nth-child(2),
+        .column td:nth-child(2) {
+            width: auto; /* İçerik sütunu mümkün olan en fazla alanı kullanacak */
+            white-space: pre-wrap; /* Uzun açıklamaları alt satıra geçir */
+            word-wrap: break-word; /* Uzun kelimeleri kırarak satıra sığdır */
+        }
+
+        .close {
+            color: red;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .dropdown {
+            margin-left: auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropbtn {
+            background-color: #007bff; /* Mavi arka plan */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropbtn:hover {
+            background-color: #0056b3; /* Hover rengi */
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Kullanıcının rolünü saklayan gizli bir alan -->
+<input type="hidden" id="userRole" th:value="${role}"/>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div>
+        <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE' || role == 'ADMIN'}">Dashboard</a>
+        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT' || role == 'ADMIN'}"
+           th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
+           th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
+           onclick="return checkApplicationPeriod();">
+            Başvuru Yap
+        </a>
+        <a href="/applications/my-applications" th:if="${role == 'STUDENT' || role == 'ADMIN'}">Başvurularım</a>
+        <a href="/applications/pending" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Bekleyen Başvurular</a>
+        <a href="/applications/approved" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Onaylanan Başvurular</a>
+        <a href="/applications/rejected" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Reddedilen Başvurular</a>
+        <a href="/settings" th:if="${role == 'COMMITTEE'|| role == 'ADMIN'}">Ayarlar</a>
+    </div>
+
+    <div class="dropdown" style="margin-left:auto; position: relative;">
+        <button class="dropbtn" onclick="toggleDropdown()" id="userDropdownBtn">
+            <span id="usernameText" th:text="${user.username}">Kullanıcı</span> &#9662;
+        </button>
+        <div id="userDropdown" class="dropdown-content">
+            <a href="/profile">Profil Sayfası</a>
+            <a href="/change-password">Şifre Değiştir</a>
+            <a href="/logout">Çıkış Yap</a>
+        </div>
+    </div>
+</div>
+
+<!-- Hata mesajını göster -->
+<div class="alert" th:if="${errorMessage}" id="errorAlert">
+    <span th:text="${errorMessage}"></span>
+    <span class="close-btn" onclick="closeAlert()">&times;</span>
+</div>
+
+<div class="container">
+    <h2>Sistem Ayarları</h2>
+
+    <div class="tab-container">
+        <button class="tab-button active" onclick="openTab(event, 'Application')">Application</button>
+        <button class="tab-button" onclick="openTab(event, 'Committee')">Committee</button>
+        <button class="tab-button" onclick="openTab(event, 'ApplicationPeriod')">Application Period</button>
+        <button class="tab-button" onclick="openTab(event, 'ExternalCourse')">External Course</button>
+        <button class="tab-button" onclick="openTab(event, 'HomeCourse')">Home Course</button>
+        <button class="tab-button" onclick="openTab(event, 'Student')">Student</button>
+        <button class="tab-button" onclick="openTab(event, 'University')">University</button>
+    </div>
+
+    <!-- Application -->
+    <div id="Application" class="tab-content active-tab">
+        <h3>Application Tablosu</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Sakarya Üniversitesi Saydırılacak Ders</th>
+                <th>Dışarıdan Alınacak Ders</th>
+                <th>Status</th>
+                <th>Submission Date</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="app : ${applications}">
+                <td th:text="${app.applicationId}"></td>
+                <td th:text="${app.student.name} + ' ' + ${app.student.surname}"></td>
+                <td th:text="${app.homeCourse.courseName}"></td>
+                <td th:text="${app.externalCourse.courseName}"></td>
+                <td th:switch="${app.status.name()}"
+                    th:classappend="${app.status.name() == 'PENDING' ? 'status-pending' : (app.status.name() == 'APPROVED' ? 'status-approved' : 'status-rejected')}">
+                    <span th:case="'PENDING'">Beklemede</span>
+                    <span th:case="'APPROVED'">Onaylandı</span>
+                    <span th:case="'REJECTED'">Reddedildi</span>
+                    <span th:case="'CANCELLED'">İptal Edildi</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
+                <td class="submission-date" th:text="${app.submissionDate}"></td>
+                <td>
+                    <button type="button" class="details-btn"
+                            th:data-application-id="${app.applicationId}"
+                            th:data-submission-date="${app.submissionDate}"
+                            th:data-status="${app.status}"
+                            th:data-student-name="${app.student.name} + ' ' + ${app.student.surname}"
+                            th:data-student-number="${app.student.studentNumber}"
+                            th:data-student-email="${app.student.email}"
+                            th:data-home-course-name="${app.homeCourse.courseName}"
+                            th:data-home-course-ects="${app.homeCourse.ects}"
+                            th:data-home-course-language="${app.homeCourse.language}"
+                            th:data-home-course-description="${app.homeCourse.description}"
+                            th:data-external-course-name="${app.externalCourse.courseName}"
+                            th:data-external-course-ects="${app.externalCourse.ects}"
+                            th:data-external-course-language="${app.externalCourse.language}"
+                            th:data-external-course-university="${app.externalCourse.university.universityName}"
+                            th:data-external-course-faculty="${app.externalCourse.university.facultyName}"
+                            th:data-external-course-department="${app.externalCourse.university.departmentName}"
+                            th:data-external-course-description="${app.externalCourse.description}"
+                            onclick="showApplicationDetails(this)">
+                        📄 Detayları Göster
+                    </button>
+
+                    <!-- Sil Butonu: Sadece ADMIN görebilir -->
+                    <form action="/settings/delete-application" method="post" th:if="${role == 'ADMIN'}"
+                          style="display:inline;">
+                        <input type="hidden" name="id" th:value="${app.applicationId}"/>
+                        <button type="submit" class="delete-btn">🗑️ Sil</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Application Details Modal -->
+    <div id="applicationDetailsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeApplicationDetails()">&times;</span>
+
+            <h2>Başvuru Detayları</h2>
+
+            <h3>Başvuru Bilgileri</h3>
+            <p><strong>Başvuru ID:</strong> <span id="modalApplicationId"></span></p>
+            <p><strong>Başvuru Tarihi:</strong> <span id="modalSubmissionDate"></span></p>
+            <p><strong>Başvuru Durumu:</strong> <span id="modalStatus"></span></p>
+
+            <hr>
+
+            <h3>Öğrenci Bilgileri</h3>
+            <p><strong>Ad Soyad:</strong> <span id="modalStudentName"></span></p>
+            <p><strong>Öğrenci Numarası:</strong> <span id="modalStudentNumber"></span></p>
+            <p><strong>Email:</strong> <span id="modalStudentEmail"></span></p>
+
+            <hr>
+
+            <h3>Sakarya Üniversitesi Saydırılacak Ders Detayları</h3>
+            <p><strong>Adı:</strong> <span id="modalHomeCourseName"></span></p>
+            <p><strong>ECTS:</strong> <span id="modalHomeCourseEcts"></span></p>
+            <p><strong>Dil:</strong> <span id="modalHomeCourseLanguage"></span></p>
+
+            <h4>Ders İçeriği:</h4>
+            <table>
+                <thead>
+                <tr><th>Hafta</th><th>İçerik</th></tr>
+                </thead>
+                <tbody id="modalHomeCourseDescriptionTable"></tbody>
+            </table>
+
+            <hr>
+
+            <h3>Dışarıdan Alınacak Ders Detayları</h3>
+            <p><strong>Adı:</strong> <span id="modalExternalCourseName"></span></p>
+            <p><strong>ECTS:</strong> <span id="modalExternalCourseEcts"></span></p>
+            <p><strong>Dil:</strong> <span id="modalExternalCourseLanguage"></span></p>
+            <p><strong>Üniversite:</strong> <span id="modalExternalCourseUniversity"></span></p>
+            <p><strong>Fakülte:</strong> <span id="modalExternalCourseFaculty"></span></p>
+            <p><strong>Bölüm:</strong> <span id="modalExternalCourseDepartment"></span></p>
+
+            <h4>Ders İçeriği:</h4>
+            <table>
+                <thead>
+                <tr><th>Hafta</th><th>İçerik</th></tr>
+                </thead>
+                <tbody id="modalExternalCourseDescriptionTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Committee -->
+    <div id="Committee" class="tab-content">
+        <h3>Committee Tablosu</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ad</th>
+                <th>Soyad</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="comm : ${committees}">
+                <td th:text="${comm.committeeId}"></td>
+                <td th:text="${comm.name}"></td>
+                <td th:text="${comm.surname}"></td>
+                <td th:text="${comm.email}"></td>
+                <td>
+                    <button type="button" class="details-btn"
+                            th:data-committee-id="${comm.committeeId}"
+                            th:data-name="${comm.name}"
+                            th:data-surname="${comm.surname}"
+                            th:data-email="${comm.email}"
+                            th:data-username="${comm.username}"
+                            onclick="showCommitteeDetails(this)">
+                        📄 Detayları Göster
+                    </button>
+
+                    <!-- Sil butonunu sadece ADMIN rolü görecek -->
+                    <form action="/settings/delete-committee" method="post" th:if="${role == 'ADMIN'}"
+                          style="display:inline;">
+                        <input type="hidden" name="id" th:value="${comm.committeeId}"/>
+                        <button type="submit" class="delete-btn">🗑️ Sil</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h4 th:if="${role == 'ADMIN'}">Yeni Committee Ekle</h4>
+        <form th:if="${role == 'ADMIN'}" action="/settings/add-committee" method="post">
+            <label for="committeeName">Ad</label>
+            <input type="text" id="committeeName" name="name" placeholder="Ad" required>
+
+            <label for="committeeSurname">Soyad</label>
+            <input type="text" id="committeeSurname" name="surname" placeholder="Soyad" required>
+
+            <label for="committeeUsername">Kullanıcı Adı (Username)</label>
+            <input type="text" id="committeeUsername" name="username" placeholder="Username" required
+                   autocomplete="off">
+
+            <label for="committeeEmail">Email</label>
+            <input type="email" id="committeeEmail" name="email" placeholder="Email" required>
+
+            <label for="committeePassword">Şifre</label>
+            <input type="password" id="committeePassword" name="password" placeholder="Şifre" required>
+
+            <button type="submit">Ekle</button>
+        </form>
+    </div>
+
+    <!-- Committee Details Modal -->
+    <div id="committeeDetailsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeCommitteeDetails()">&times;</span>
+
+            <h2>Komite Üyesi Detayları</h2>
+            <p><strong>ID:</strong> <span id="modalCommitteeId"></span></p>
+            <p><strong>Ad:</strong> <span id="modalCommitteeName"></span></p>
+            <p><strong>Soyad:</strong> <span id="modalCommitteeSurname"></span></p>
+            <p><strong>Email:</strong> <span id="modalCommitteeEmail"></span></p>
+            <p><strong>Kullanıcı Adı (Username):</strong> <span id="modalCommitteeUsername"></span></p>
+        </div>
+    </div>
+
+    <!-- Application Period -->
+    <div id="ApplicationPeriod" class="tab-content">
+        <h3>Application Period Tablosu</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Preview Start</th>
+                <th>Preview End</th>
+                <th>Application Start</th>
+                <th>Application End</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="period : ${applicationPeriods}">
+                <td th:text="${period.id}"></td>
+                <td th:text="${period.previewStartDate}"></td>
+                <td th:text="${period.previewEndDate}"></td>
+                <td th:text="${period.applicationStartDate}"></td>
+                <td th:text="${period.applicationEndDate}"></td>
+                <td>
+                    <form action="/settings/delete-application-period" method="post" th:if="${role == 'ADMIN'}">
+                        <input type="hidden" name="id" th:value="${period.id}"/>
+                        <button type="submit" class="delete-btn">🗑️ Sil</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Sadece adminler için "Yeni Başvuru Dönemi Ekle" butonu -->
+        <button th:if="${role == 'ADMIN'}" onclick="toggleAddForm()" class="edit-btn">➕ Yeni Başvuru Dönemi Ekle
+        </button>
+
+        <!-- Sadece adminler için "Yeni Başvuru Dönemi Ekle" formu -->
+        <div id="addPeriodForm" th:if="${role == 'ADMIN'}"
+             style="display: none; margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+            <h3>Yeni Başvuru Dönemi Ekle</h3>
+            <form action="/settings/update-period" method="post">
+                <label for="newPreviewStart">📅 Ön İzleme Başlangıç:</label>
+                <input type="datetime-local" id="newPreviewStart" name="previewStart" required>
+
+                <label for="newPreviewEnd">📅 Ön İzleme Bitiş:</label>
+                <input type="datetime-local" id="newPreviewEnd" name="previewEnd" required>
+
+                <label for="newApplyStart">📅 Başvuru Başlangıç:</label>
+                <input type="datetime-local" id="newApplyStart" name="applyStart" required>
+
+                <label for="newApplyEnd">📅 Başvuru Bitiş:</label>
+                <input type="datetime-local" id="newApplyEnd" name="applyEnd" required>
+
+                <div class="button-container">
+                    <button type="submit" class="update-btn">✅ Kaydet</button>
+                    <button type="button" class="reset-btn" onclick="toggleAddForm()">❌ İptal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ExternalCourse -->
+    <div id="ExternalCourse" class="tab-content">
+        <h3>Dışarıdan Alınacak Ders Tablosu</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Course Name</th>
+                <th>University</th>
+                <th>ECTS</th>
+                <th>Language</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="course : ${externalCourses}">
+                <td th:text="${course.externalCourseId}"></td>
+                <td th:text="${course.courseName}"></td>
+                <td th:text="${course.university.universityName}"></td>
+                <td th:text="${course.ects}"></td>
+                <td th:switch="${course.language.name()}"
+                    th:classappend="${course.language.name() == 'TURKISH' ? 'lang-tr' : (course.language.name() == 'ENGLISH' ? 'lang-en' : 'lang-unknown')}">
+                    <span th:case="'TURKISH'">Türkçe</span>
+                    <span th:case="'ENGLISH'">İngilizce</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
+                <td>
+                    <button type="button" class="details-btn"
+                            th:data-id="${course.externalCourseId}"
+                            th:data-course-name="${course.courseName}"
+                            th:data-university-name="${course.university.universityName}"
+                            th:data-faculty-name="${course.university.facultyName}"
+                            th:data-department-name="${course.university.departmentName}"
+                            th:data-ects="${course.ects}"
+                            th:data-language="${course.language}"
+                            th:data-description="${course.description}"
+                            onclick="showExternalCourseDetails(this)">
+                        📄 Detayları Göster
+                    </button>
+
+                    <form action="/settings/delete-external-course" method="post" th:if="${role == 'ADMIN'}">
+                        <input type="hidden" name="id" th:value="${course.externalCourseId}"/>
+                        <button type="submit" class="delete-btn">🗑️ Sil</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="externalCoursePopup" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeExternalPopup()">&times;</span>
+            <h2>Dışarıdan Alınacak Ders Detayları</h2>
+            <p><strong>Ders Adı:</strong> <span id="popupExternalCourseName"></span></p>
+            <p><strong>Üniversite:</strong> <span id="popupExternalUniversityName"></span></p>
+            <p><strong>Fakülte:</strong> <span id="popupExternalFacultyName"></span></p>
+            <p><strong>Bölüm:</strong> <span id="popupExternalDepartmentName"></span></p>
+            <p><strong>ECTS:</strong> <span id="popupExternalEcts"></span></p>
+            <p><strong>Dil:</strong> <span id="popupExternalLanguage"></span></p>
+
+            <h3>Ders İçeriği</h3>
+            <table>
+                <thead>
+                <tr><th>Hafta</th><th>İçerik</th></tr>
+                </thead>
+                <tbody id="popupExternalDescriptionTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Student -->
+    <div id="Student" class="tab-content">
+        <h3>Student Tablosu</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ad</th>
+                <th>Soyad</th>
+                <th>Email</th>
+                <th>Numara</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="student : ${students}">
+                <td th:text="${student.studentId}"></td>
+                <td th:text="${student.name}"></td>
+                <td th:text="${student.surname}"></td>
+                <td th:text="${student.email}"></td>
+                <td th:text="${student.studentNumber}"></td>
+                <td>
+                    <button type="button" class="details-btn"
+                            th:data-name="${student.name}"
+                            th:data-surname="${student.surname}"
+                            th:data-email="${student.email}"
+                            th:data-student-number="${student.studentNumber}"
+                            onclick="showStudentDetails(this)">
+                        📄 Detayları Göster
+                    </button>
+
+                    <div th:if="${role == 'ADMIN'}">
+                        <form action="/settings/lock-student" method="post" style="display:inline;">
+                            <input type="hidden" name="id" th:value="${student.studentId}" />
+                            <button type="submit" class="lock-btn"
+                                    th:text="${student.locked} ? '🔒 Kilidi Aç' : '🔒 Kilitle'"></button>
+                        </form>
+
+                        <form action="/settings/disable-student" method="post" style="display:inline;">
+                            <input type="hidden" name="id" th:value="${student.studentId}" />
+                            <button type="submit" class="disable-btn"
+                                    th:text="${student.disabled} ? '🚫 Aktifleştir' : '🚫 Devre Dışı Bırak'"></button>
+                        </form>
+
+                        <form action="/settings/delete-student" method="post" style="display:inline;">
+                            <input type="hidden" name="id" th:value="${student.studentId}" />
+                            <button type="submit" class="delete-btn">🗑️ Sil</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${role == 'ADMIN'}">
+            <h4>Yeni Student Ekle</h4>
+            <form action="/settings/add-student" method="post">
+                <label for="studentId">Öğrenci Numarası</label>
+                <input type="text" id="studentId" name="studentNumber" placeholder="Öğrenci Numarası" required>
+
+                <label for="studentName">Ad</label>
+                <input type="text" id="studentName" name="name" placeholder="Ad" required>
+
+                <label for="studentSurname">Soyad</label>
+                <input type="text" id="studentSurname" name="surname" placeholder="Soyad" required>
+
+                <label for="studentEmail">Email</label>
+                <input type="email" id="studentEmail" name="email" placeholder="Email" required>
+
+                <label for="studentPassword">Şifre</label>
+                <input type="password" id="studentPassword" name="password" placeholder="Şifre" required>
+
+                <label for="studentSemester">Semester</label>
+                <select id="studentSemester" name="semester" required>
+                    <option value="" selected disabled>Seçiniz</option>
+                    <option th:each="s : ${semesters}" th:value="${s}" th:text="${s}"></option>
+                </select>
+
+                <label for="studentEducationYear">Education Year</label>
+                <select id="studentEducationYear" name="educationYear" required>
+                    <option value="" selected disabled>Seçiniz</option>
+                    <option th:each="ey : ${educationYears}" th:value="${ey}" th:text="${ey}"></option>
+                </select>
+
+                <label for="studentYear">Yıl</label>
+                <input type="text" id="studentYear" name="year" placeholder="Yıl" required>
+
+                <label for="studentGpa">GPA</label>
+                <input type="number" id="studentGpa" step="0.01" name="gpa" placeholder="GPA" required>
+
+                <button type="submit">Ekle</button>
+            </form>
+        </div>
+
+        <div id="studentDetailsPopup" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeStudentPopup()">&times;</span>
+                <h2>Öğrenci Detayları</h2>
+                <p><strong>Ad:</strong> <span id="popupStudentName"></span></p>
+                <p><strong>Soyad:</strong> <span id="popupStudentSurname"></span></p>
+                <p><strong>Email:</strong> <span id="popupStudentEmail"></span></p>
+                <p><strong>Öğrenci Numarası:</strong> <span id="popupStudentNumber"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- HomeCourse -->
+    <div id="HomeCourse" class="tab-content">
+        <h3>Sakarya Üniversitesi Saydırılacak Ders Tablosu</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Course Name</th>
+                <th>ECTS</th>
+                <th>Language</th>
+                <th>Theoretical Hours</th>
+                <th>Practical Hours</th>
+                <th>Semester</th>
+                <th>Education Year</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="course : ${homeCourses}">
+                <td th:text="${course.homeCourseId}"></td>
+                <td th:text="${course.courseName}"></td>
+                <td th:text="${course.ects}"></td>
+                <td th:switch="${course.language.name()}"
+                    th:classappend="${course.language.name() == 'TURKISH' ? 'lang-tr' : (course.language.name() == 'ENGLISH' ? 'lang-en' : 'lang-unknown')}">
+                    <span th:case="'TURKISH'">Türkçe</span>
+                    <span th:case="'ENGLISH'">İngilizce</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
+                <td th:text="${course.theoreticalHours}"></td>
+                <td th:text="${course.practicalHours}"></td>
+                <td th:switch="${course.semester.name()}"
+                    th:classappend="${course.semester.name() == 'FALL' ? 'semester-fall' : (course.semester.name() == 'SPRING' ? 'semester-spring' : 'semester-unknown')}">
+                    <span th:case="'FALL'">Güz</span>
+                    <span th:case="'SPRING'">Bahar</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
+                <td th:switch="${course.educationYear.name()}"
+                    th:classappend="${course.educationYear.name() == 'FIRST' ? 'year-1' :
+                    (course.educationYear.name() == 'SECOND' ? 'year-2' :
+                    (course.educationYear.name() == 'THIRD' ? 'year-3' :
+                    (course.educationYear.name() == 'FOURTH' ? 'year-4' : 'year-unknown')))}">
+                    <span th:case="'FIRST'">1. Sınıf</span>
+                    <span th:case="'SECOND'">2. Sınıf</span>
+                    <span th:case="'THIRD'">3. Sınıf</span>
+                    <span th:case="'FOURTH'">4. Sınıf</span>
+                    <span th:case="*">Bilinmiyor</span>
+                </td>
+                <td>
+                    <button type="button" class="details-btn"
+                            th:data-course-name="${course.courseName}"
+                            th:data-ects="${course.ects}"
+                            th:data-language="${course.language}"
+                            th:data-theoretical-hours="${course.theoreticalHours}"
+                            th:data-practical-hours="${course.practicalHours}"
+                            th:data-semester="${course.semester}"
+                            th:data-education-year="${course.educationYear}"
+                            th:data-description="${course.description}"
+                            onclick="showHomeCourseDetails(this)">
+                        📄 Detayları Göster
+                    </button>
+
+                    <form action="/settings/delete-home-course" method="post" th:if="${role == 'ADMIN'}">
+                        <input type="hidden" name="id" th:value="${course.homeCourseId}"/>
+                        <button type="submit" class="delete-btn">🗑️ Sil</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${role == 'ADMIN'}">
+            <h4>Yeni Sakarya Üniversitesi Saydırılacak Ders Ekle</h4>
+            <form id="homeCourseForm" action="/settings/add-home-course" method="post">
+                <label for="HomeCourseName">Ders Adı</label>
+                <input type="text" id="HomeCourseName" name="courseName" placeholder="Ders Adı" required>
+
+                <label for="HomeCourseEcts">ECTS</label>
+                <input type="number" id="HomeCourseEcts" name="ects" placeholder="ECTS" required>
+
+                <label for="HomeCourseLanguage">Language</label>
+                <select id="HomeCourseLanguage" name="language" required>
+                    <option value="" selected disabled>Seçiniz</option>
+                    <option th:each="lang : ${languages}" th:value="${lang}" th:text="${lang}"></option>
+                </select>
+
+                <label for="HomeCourseTheoreticalHours">Teorik Saat</label>
+                <input type="number" id="HomeCourseTheoreticalHours" name="theoreticalHours"
+                       placeholder="Teorik Saat"
+                       required>
+
+                <label for="HomeCoursePracticalHours">Pratik Saat</label>
+                <input type="number" id="HomeCoursePracticalHours" name="practicalHours" placeholder="Pratik Saat"
+                       required>
+
+                <label for="HomeCourseSemester">Semester</label>
+                <select id="HomeCourseSemester" name="semester" required>
+                    <option value="" selected disabled>Seçiniz</option>
+                    <option th:each="s : ${semesters}" th:value="${s}" th:text="${s}"></option>
+                </select>
+
+                <label for="HomeCourseEducationYear">Education Year</label>
+                <select id="HomeCourseEducationYear" name="educationYear" required>
+                    <option value="" selected disabled>Seçiniz</option>
+                    <option th:each="ey : ${educationYears}" th:value="${ey}" th:text="${ey}"></option>
+                </select>
+
+                <h3>Ders İçeriği</h3>
+                <div id="weeklyDescriptions">
+                    <script>
+                        for (let i = 1; i <= 14; i++) {
+                            document.write('<label for="HomeCourseWeek' + i + '"> ' + i + '. Hafta:</label>');
+                            document.write('<textarea id="HomeCourseWeek' + i + '" class="week-description" rows="2"></textarea><br>');
+                        }
+                    </script>
+                </div>
+
+                <!-- Gizli input alanı, ders içeriği birleşik şekilde buraya aktarılacak -->
+                <input type="hidden" id="HomeCourseMergedDescription" name="description">
+
+                <button type="submit" onclick="mergeDescriptions()">Ekle</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="homeCoursePopup" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeHomeCoursePopup()">&times;</span>
+            <h2>Sakarya Üniversitesi Saydırılacak Ders Detayları</h2>
+            <p><strong>Ders Adı:</strong> <span id="popupHomeCourseName"></span></p>
+            <p><strong>ECTS:</strong> <span id="popupHomeEcts"></span></p>
+            <p><strong>Language:</strong> <span id="popupHomeLanguage"></span></p>
+            <p><strong>Theoretical Hours:</strong> <span id="popupHomeTheoreticalHours"></span></p>
+            <p><strong>Practical Hours:</strong> <span id="popupHomePracticalHours"></span></p>
+            <p><strong>Semester:</strong> <span id="popupHomeSemester"></span></p>
+            <p><strong>Education Year:</strong> <span id="popupHomeEducationYear"></span></p>
+
+            <h3>Ders İçeriği</h3>
+            <table>
+                <thead>
+                <tr><th>Hafta</th><th>İçerik</th></tr>
+                </thead>
+                <tbody id="popupHomeDescriptionTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- University -->
+    <div id="University" class="tab-content">
+        <h3>University Tablosu</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>University Name</th>
+                <th>Faculty Name</th>
+                <th>Department Name</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="univ : ${universities}">
+                <td th:text="${univ.universityId}"></td>
+                <td th:text="${univ.universityName}"></td>
+                <td th:text="${univ.facultyName}"></td>
+                <td th:text="${univ.departmentName}"></td>
+                <td>
+                    <form action="/settings/delete-university" method="post" th:if="${role == 'ADMIN'}">
+                        <input type="hidden" name="id" th:value="${univ.universityId}"/>
+                        <button type="submit" class="delete-btn">🗑️ Sil</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${role == 'ADMIN'}">
+            <h4>Yeni University Ekle</h4>
+            <form action="/settings/add-university" method="post">
+                <label for="UniversityName">Üniversite Adı</label>
+                <input type="text" id="UniversityName" name="universityName" placeholder="Üniversite Adı" required>
+
+                <label for="FacultyName">Fakülte Adı</label>
+                <input type="text" id="FacultyName" name="facultyName" placeholder="Fakülte Adı" required>
+
+                <label for="DepartmentName">Bölüm Adı</label>
+                <input type="text" id="DepartmentName" name="departmentName" placeholder="Bölüm Adı" required>
+
+                <button type="submit">Ekle</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openTab(event, tabName) {
+        document.querySelectorAll(".tab-content").forEach(tab => tab.style.display = "none");
+        document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+        document.getElementById(tabName).style.display = "block";
+        event.currentTarget.classList.add("active");
+    }
+
+    function toggleAddForm() {
+        var form = document.getElementById("addPeriodForm");
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    function closeAlert() {
+        document.getElementById("errorAlert").style.display = "none";
+    }
+
+    window.onload = function () {
+        let role = document.getElementById("userRole").value;
+
+        if (role !== "COMMITTEE" && role !== "ADMIN") {
+            alert("Yetkisiz erişim! Sadece komite üyeleri erişebilir.");
+            window.location.href = (role === "STUDENT") ? "/dashboard" : "/login";
+        }
+
+        let showErrorPopup = /*[[${showErrorPopup}]]*/ false;
+        if (showErrorPopup) {
+            document.getElementById("errorPopup").style.display = "block";
+        }
+
+        let isApplicationPeriod = document.getElementById("isApplicationPeriod").getAttribute("data-application-period") === "true";
+        let isPreviewMode = document.getElementById("isPreviewMode").getAttribute("data-preview-mode") === "true";
+
+        // Eğer başvuru dönemi değilse kullanıcı dashboard'a yönlendirilecek
+        if (!isApplicationPeriod && !isPreviewMode) {
+            alert("Başvuru süreci kapalı! Dashboard'a yönlendiriliyorsunuz.");
+            window.location.href = "/dashboard";
+        }
+    };
+
+    function mergeDescriptions() {
+        let descriptions = [];
+        for (let i = 1; i <= 14; i++) {
+            let weekDescription = document.getElementById(`HomeCourseWeek${i}`).value.trim(); // DÜZELTME BURADA
+            descriptions.push(weekDescription);
+        }
+        document.getElementById("HomeCourseMergedDescription").value = descriptions.join(" | "); // id doğru
+    }
+
+    function showApplicationDetails(button) {
+        // Başvuru ve Öğrenci Bilgileri
+        document.getElementById("modalApplicationId").innerText = button.getAttribute("data-application-id");
+        document.getElementById("modalSubmissionDate").innerText = button.getAttribute("data-submission-date");
+        document.getElementById("modalStatus").innerText = button.getAttribute("data-status");
+        document.getElementById("modalStudentName").innerText = button.getAttribute("data-student-name");
+        document.getElementById("modalStudentNumber").innerText = button.getAttribute("data-student-number");
+        document.getElementById("modalStudentEmail").innerText = button.getAttribute("data-student-email");
+
+        // Home Course Bilgileri
+        document.getElementById("modalHomeCourseName").innerText = button.getAttribute("data-home-course-name");
+        document.getElementById("modalHomeCourseEcts").innerText = button.getAttribute("data-home-course-ects");
+        document.getElementById("modalHomeCourseLanguage").innerText =
+            languageMap[button.getAttribute("data-home-course-language")] || button.getAttribute("data-home-course-language");
+
+        fillDescriptionTable("modalHomeCourseDescriptionTable", button.getAttribute("data-home-course-description"));
+
+        // External Course Bilgileri
+        document.getElementById("modalExternalCourseName").innerText = button.getAttribute("data-external-course-name");
+        document.getElementById("modalExternalCourseEcts").innerText = button.getAttribute("data-external-course-ects");
+        document.getElementById("modalExternalCourseLanguage").innerText =
+            languageMap[button.getAttribute("data-external-course-language")] || button.getAttribute("data-external-course-language");
+        document.getElementById("modalExternalCourseUniversity").innerText = button.getAttribute("data-external-course-university");
+        document.getElementById("modalExternalCourseFaculty").innerText = button.getAttribute("data-external-course-faculty");
+        document.getElementById("modalExternalCourseDepartment").innerText = button.getAttribute("data-external-course-department");
+
+        fillDescriptionTable("modalExternalCourseDescriptionTable", button.getAttribute("data-external-course-description"));
+
+        document.getElementById("applicationDetailsModal").style.display = "block";
+    }
+
+    function fillDescriptionTable(tableId, description) {
+        const tableBody = document.getElementById(tableId);
+        tableBody.innerHTML = "";
+
+        if (description) {
+            const weeks = description.split(" | ");
+            weeks.forEach((weekContent, index) => {
+                let row = tableBody.insertRow();
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                cell1.innerText = `Hafta ${index + 1}`;
+                cell2.innerText = weekContent.trim() || "Boş";
+            });
+        }
+    }
+
+    function closeApplicationDetails() {
+        document.getElementById('applicationDetailsModal').style.display = "none";
+    }
+
+    function showCommitteeDetails(button) {
+        document.getElementById('modalCommitteeId').innerText = button.getAttribute('data-committee-id');
+        document.getElementById('modalCommitteeName').innerText = button.getAttribute('data-name');
+        document.getElementById('modalCommitteeSurname').innerText = button.getAttribute('data-surname');
+        document.getElementById('modalCommitteeEmail').innerText = button.getAttribute('data-email');
+        document.getElementById('modalCommitteeUsername').innerText = button.getAttribute('data-username');
+
+        document.getElementById('committeeDetailsModal').style.display = "block";
+    }
+
+    function closeCommitteeDetails() {
+        document.getElementById('committeeDetailsModal').style.display = "none";
+    }
+
+    function showExternalCourseDetails(button) {
+        document.getElementById("popupExternalCourseName").innerText = button.getAttribute("data-course-name");
+        document.getElementById("popupExternalUniversityName").innerText = button.getAttribute("data-university-name");
+        document.getElementById("popupExternalFacultyName").innerText = button.getAttribute("data-faculty-name");
+        document.getElementById("popupExternalDepartmentName").innerText = button.getAttribute("data-department-name");
+        document.getElementById("popupExternalEcts").innerText = button.getAttribute("data-ects");
+        document.getElementById("popupExternalLanguage").innerText =
+            languageMap[button.getAttribute("data-language")] || button.getAttribute("data-language");
+
+        fillDescriptionTable("popupExternalDescriptionTable", button.getAttribute("data-description"));
+
+        document.getElementById("externalCoursePopup").style.display = "block";
+    }
+
+    function closeExternalPopup() {
+        document.getElementById("externalCoursePopup").style.display = "none";
+    }
+
+    function showHomeCourseDetails(button) {
+        document.getElementById("popupHomeCourseName").innerText = button.getAttribute("data-course-name");
+        document.getElementById("popupHomeEcts").innerText = button.getAttribute("data-ects");
+        document.getElementById("popupHomeLanguage").innerText =
+            languageMap[button.getAttribute("data-language")] || button.getAttribute("data-language");
+        document.getElementById("popupHomeTheoreticalHours").innerText = button.getAttribute("data-theoretical-hours");
+        document.getElementById("popupHomePracticalHours").innerText = button.getAttribute("data-practical-hours");
+        document.getElementById("popupHomeSemester").innerText =
+            semesterMap[button.getAttribute("data-semester")] || button.getAttribute("data-semester");
+        document.getElementById("popupHomeEducationYear").innerText =
+            educationYearMap[button.getAttribute("data-education-year")] || button.getAttribute("data-education-year");
+
+        fillDescriptionTable("popupHomeDescriptionTable", button.getAttribute("data-description"));
+
+        document.getElementById("homeCoursePopup").style.display = "block";
+    }
+
+    function closeHomeCoursePopup() {
+        document.getElementById("homeCoursePopup").style.display = "none";
+    }
+
+    function showStudentDetails(button) {
+        document.getElementById("popupStudentName").innerText = button.getAttribute("data-name");
+        document.getElementById("popupStudentSurname").innerText = button.getAttribute("data-surname");
+        document.getElementById("popupStudentEmail").innerText = button.getAttribute("data-email");
+        document.getElementById("popupStudentNumber").innerText = button.getAttribute("data-student-number");
+
+        document.getElementById("studentDetailsPopup").style.display = "block";
+    }
+
+    function closeStudentPopup() {
+        document.getElementById("studentDetailsPopup").style.display = "none";
+    }
+
+    function toggleDropdown() {
+        document.getElementById("userDropdown").classList.toggle("show");
+    }
+
+    // Sayfanın herhangi bir yerine tıklanırsa menüyü kapat
+    window.onclick = function (event) {
+        const button = document.getElementById("userDropdownBtn");
+        if (!button.contains(event.target)) {
+            document.getElementById("userDropdown").classList.remove("show");
+        }
+    }
+
+    function formatToDayMonthYear(dateStr) {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        return `${day}.${month}.${year}`;
+    }
+
+    document.querySelectorAll('.submission-date').forEach(function(cell) {
+        const originalDate = cell.innerText.trim();
+        if (originalDate && originalDate.includes('-')) {
+            const [year, month, day] = originalDate.split("-");
+            cell.innerText = `${day}.${month}.${year}`;
+        }
+    });
+
+    const languageMap = {
+        "TURKISH": "Türkçe",
+        "ENGLISH": "İngilizce"
+    };
+
+    const semesterMap = {
+        "FALL": "Güz",
+        "SPRING": "Bahar"
+    };
+
+    const educationYearMap = {
+        "FIRST": "1. Sınıf",
+        "SECOND": "2. Sınıf",
+        "THIRD": "3. Sınıf",
+        "FOURTH": "4. Sınıf"
+    };
+</script>
+
+</body>
+</html>

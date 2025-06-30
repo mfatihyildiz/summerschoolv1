@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ders Onay Sayfası</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: visible !important;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; /* merkeze değil, iki uca yasla */
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #555;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+
+        h2 {
+            color: #333;
+        }
+
+        .course-info {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+            padding: 10px;
+            background: #ffe5e5;
+            border: 1px solid red;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .confirm-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .confirm-btn:hover {
+            background-color: #218838;
+        }
+
+        .back-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .back-btn:hover {
+            background-color: #c82333;
+        }
+
+        .course-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .course-info {
+            width: 48%;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        h4 {
+            margin-top: 15px;
+            color: #333;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            background: #ffffff;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .confirm-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .confirm-btn:hover {
+            background-color: #218838;
+        }
+
+        .dropdown {
+            margin-left: auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropbtn {
+            background-color: #007bff; /* Mavi arka plan */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropbtn:hover {
+            background-color: #0056b3; /* Hover rengi */
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Kullanıcının rolü ve başvuru tarihleri kontrolü -->
+<input type="hidden" id="userRole" th:value="${role}"/>
+<input type="hidden" id="isApplicationPeriod" th:attr="data-application-period=${isApplicationPeriod}"/>
+<input type="hidden" id="isPreviewMode" th:attr="data-preview-mode=${isPreviewMode}"/>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div>
+        <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE' || role == 'ADMIN'}">Dashboard</a>
+        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT' || role == 'ADMIN'}"
+           th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
+           th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
+           onclick="return checkApplicationPeriod();">
+            Başvuru Yap
+        </a>
+        <a href="/applications/my-applications" th:if="${role == 'STUDENT' || role == 'ADMIN'}">Başvurularım</a>
+        <a href="/applications/pending" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Bekleyen Başvurular</a>
+        <a href="/applications/approved" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Onaylanan Başvurular</a>
+        <a href="/applications/rejected" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Reddedilen Başvurular</a>
+        <a href="/settings" th:if="${role == 'COMMITTEE'|| role == 'ADMIN'}">Ayarlar</a>
+    </div>
+
+    <div class="dropdown" style="margin-left:auto; position: relative;">
+        <button class="dropbtn" onclick="toggleDropdown()" id="userDropdownBtn">
+            <span id="usernameText" th:text="${user.username}">Kullanıcı</span> &#9662;
+        </button>
+        <div id="userDropdown" class="dropdown-content">
+            <a href="/profile">Profil Sayfası</a>
+            <a href="/change-password">Şifre Değiştir</a>
+            <a href="/logout">Çıkış Yap</a>
+        </div>
+    </div>
+</div>
+
+<!-- Hata mesajını göster -->
+<div class="alert" th:if="${errorMessage}" id="errorAlert">
+    <span th:text="${errorMessage}"></span>
+    <span class="close-btn" onclick="closeAlert()">&times;</span>
+</div>
+
+<div class="container">
+    <h2>Seçilen Dersler</h2>
+
+    <!-- Hata Mesajı -->
+    <div th:if="${errorMessage}" class="error-message">
+        <p th:text="${errorMessage}"></p>
+        <button class="back-btn" onclick="window.history.back()">Geri Dön</button>
+    </div>
+
+    <!-- Eğer hata yoksa bilgileri göster -->
+    <div th:if="${errorMessage == null}">
+        <div class="course-container">
+            <!-- HomeCourse Bilgileri -->
+            <div class="course-info">
+                <h3>Sakarya Üniversitesi Saydırılacak Ders Bilgileri</h3>
+                <p><strong>Ders Adı:</strong> <span th:text="${homeCourse?.courseName}"></span></p>
+                <p><strong>ECTS:</strong> <span id="homeCourseEcts" th:text="${homeCourse?.ects}"></span></p>
+                <p><strong>Dil:</strong> <span id="homeCourseLanguage" th:text="${homeCourse?.language}"></span></p>
+
+                <h4>Ders İçeriği</h4>
+                <ul>
+                    <li th:each="content, iterStat : ${#strings.arraySplit(homeCourse?.description, '|')}">
+                        <strong th:text="'Hafta ' + ${iterStat.index + 1} + ': '"></strong>
+                        <span th:text="${#strings.trim(content)}"></span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ExternalCourse Bilgileri -->
+            <div class="course-info">
+                <h3>Dışarıdan Alınacak Ders Bilgileri</h3>
+                <p><strong>Ders Adı:</strong> <span th:text="${externalCourse?.courseName}"></span></p>
+                <p><strong>ECTS:</strong> <span id="externalCourseEcts" th:text="${externalCourse?.ects}"></span></p>
+                <p><strong>Dil:</strong> <span id="externalCourseLanguage" th:text="${externalCourse?.language}"></span></p>
+
+                <h4>Ders İçeriği</h4>
+                <ul>
+                    <li th:each="content, iterStat : ${#strings.arraySplit(externalCourse?.description, '|')}">
+                        <strong th:text="'Hafta ' + ${iterStat.index + 1} + ': '"></strong>
+                        <span th:text="${#strings.trim(content)}"></span>
+                    </li>
+                </ul>
+                <p><strong>Üniversite:</strong> <span id="externalCourseUniversity" th:text="${externalCourse?.university.universityName}"></span></p>
+                <p><strong>Fakülte:</strong> <span id="externalCourseFaculty" th:text="${externalCourse?.university.facultyName}"></span></p>
+                <p><strong>Bölüm:</strong> <span id="externalCourseDepartment" th:text="${externalCourse?.university.departmentName}"></span></p>
+            </div>
+        </div>
+
+        <!-- Onay Butonu -->
+        <form method="post" th:action="@{/applications/submit}" onsubmit="return validateEcts()">
+            <input type="hidden" name="homeCourseId" th:value="${homeCourse?.homeCourseId}"/>
+            <input type="hidden" name="externalCourseId" th:value="${externalCourse?.externalCourseId}"/>
+
+            <button type="submit" class="confirm-btn">Başvuruyu Onayla</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function validateEcts() {
+        const homeCourseEcts = parseInt(document.getElementById('homeCourseEcts').textContent, 10);
+        const externalCourseEcts = parseInt(document.getElementById('externalCourseEcts').textContent, 10);
+        const homeCourseLanguage = document.getElementById("homeCourseLanguage").textContent.trim();
+        const externalCourseLanguage = document.getElementById("externalCourseLanguage").textContent.trim();
+
+        // AKTS Kontrolü
+        if (externalCourseEcts < homeCourseEcts) {
+            alert("Dışarıdan alınacak dersin AKTS değeri, seçilen HomeCourse'un AKTS değerine eşit veya daha büyük olmalıdır.");
+            return false;
+        }
+
+        // Dil Kontrolü
+        if (homeCourseLanguage !== externalCourseLanguage) {
+            alert("Seçilen derslerin eğitim dili aynı olmalıdır.");
+            return false;
+        }
+        return true;
+    }
+
+    // Sayfa yüklendiğinde role kontrolü yap
+    window.onload = function () {
+        let role = document.getElementById("userRole").value;
+
+        if (role !== "STUDENT" && role !== "ADMIN") {
+            alert("Yetkisiz erişim! Sadece öğrenciler erişebilir.");
+            window.location.href = (role === "COMMITTEE") ? "/dashboard" : "/login";
+        }
+
+        let showErrorPopup = /*[[${showErrorPopup}]]*/ false;
+        if (showErrorPopup) {
+            document.getElementById("errorPopup").style.display = "block";
+        }
+
+        let isApplicationPeriod = document.getElementById("isApplicationPeriod").getAttribute("data-application-period") === "true";
+        let isPreviewMode = document.getElementById("isPreviewMode").getAttribute("data-preview-mode") === "true";
+
+        // Eğer başvuru dönemi değilse kullanıcı dashboard'a yönlendirilecek
+        if (!isApplicationPeriod && !isPreviewMode) {
+            alert("Başvuru süreci kapalı! Dashboard'a yönlendiriliyorsunuz.");
+            window.location.href = "/dashboard";
+        }
+    };
+
+    function checkApplicationPeriod(event) {
+        let isPreviewMode = /*[[${previewMode}]]*/ false;
+
+        if (isPreviewMode) {
+            event.preventDefault();
+            alert("Şu anda sadece dersleri görüntüleyebilirsiniz. Başvuru süreci henüz başlamadı.");
+        }
+    }
+
+    function closeAlert() {
+        document.getElementById("errorAlert").style.display = "none";
+    }
+
+    function toggleDropdown() {
+        document.getElementById("userDropdown").classList.toggle("show");
+    }
+
+    // Sayfanın herhangi bir yerine tıklanırsa menüyü kapat
+    window.onclick = function (event) {
+        const button = document.getElementById("userDropdownBtn");
+        if (!button.contains(event.target)) {
+            document.getElementById("userDropdown").classList.remove("show");
+        }
+    }
+
+    const languageMap = {
+        "TURKISH": "Türkçe",
+        "ENGLISH": "İngilizce"
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const homeLang = document.getElementById("homeCourseLanguage");
+        const externalLang = document.getElementById("externalCourseLanguage");
+
+        if (homeLang) {
+            const raw = homeLang.innerText.trim();
+            homeLang.innerText = languageMap[raw] || raw;
+        }
+
+        if (externalLang) {
+            const raw = externalLang.innerText.trim();
+            externalLang.innerText = languageMap[raw] || raw;
+        }
+    });
+</script>
+
+</body>
+</html>
