@@ -33,6 +33,7 @@ public class SecurityFilterConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/error").permitAll()
+                        .requestMatchers("/api/similarity/**").permitAll()  // Allow public access to similarity API
                         .requestMatchers("/dashboard", "/applications/**", "/settings/**", "/external/**", "/university/**",
                                 "/profile", "/change-password").hasAnyRole(Role.STUDENT.name(), Role.COMMITTEE.name(), Role.ADMIN.name())
                         .anyRequest().authenticated()
