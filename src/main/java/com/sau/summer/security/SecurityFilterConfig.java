@@ -33,6 +33,8 @@ public class SecurityFilterConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/error").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/initialize/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/initialize/**").permitAll()
                         .requestMatchers("/dashboard", "/applications/**", "/settings/**", "/external/**", "/university/**",
                                 "/profile", "/change-password").hasAnyRole(Role.STUDENT.name(), Role.COMMITTEE.name(), Role.ADMIN.name())
                         .anyRequest().authenticated()

@@ -28,6 +28,8 @@ public class Application {
 
     private LocalDate submissionDate = LocalDate.now();
 
+    private Double similarityScore;
+
     // Getters and Setters
     public Long getApplicationId() {
         return applicationId;
@@ -72,5 +74,12 @@ public class Application {
     public void setSubmissionDate(LocalDate submissionDate) {
         this.submissionDate = submissionDate;
     }
-}
 
+    public Double getSimilarityScore() {
+        return similarityScore;
+    }
+
+    public void setSimilarityScore(Double similarityScore) {
+        this.similarityScore = similarityScore;
+    }
+}

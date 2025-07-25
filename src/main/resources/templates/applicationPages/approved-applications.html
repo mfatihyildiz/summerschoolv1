@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Onaylanmış Başvurular</title>
     <style>
@@ -15,7 +16,8 @@
             overflow: visible !important;
             padding: 10px 20px;
             display: flex;
-            justify-content: space-between; /* merkeze değil, iki uca yasla */
+            justify-content: space-between;
+            /* merkeze değil, iki uca yasla */
             align-items: center;
             position: relative;
             z-index: 1;
@@ -56,7 +58,8 @@
             background: white;
         }
 
-        th, td {
+        th,
+        td {
             padding: 10px;
             text-align: center;
             border-bottom: 1px solid #ddd;
@@ -110,8 +113,10 @@
             text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             position: relative;
-            max-height: 80vh; /* Pop-up'ın ekranın %80'inden uzun olmamasını sağlar */
-            overflow-y: auto; /* İçerik fazla olursa dikey kaydırma */
+            max-height: 80vh;
+            /* Pop-up'ın ekranın %80'inden uzun olmamasını sağlar */
+            overflow-y: auto;
+            /* İçerik fazla olursa dikey kaydırma */
         }
 
         .column {
@@ -130,7 +135,8 @@
             table-layout: auto;
         }
 
-        .column th, .column td {
+        .column th,
+        .column td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
@@ -210,7 +216,8 @@
         }
 
         .dropbtn {
-            background-color: #007bff; /* Mavi arka plan */
+            background-color: #007bff;
+            /* Mavi arka plan */
             color: white;
             padding: 12px 20px;
             border: none;
@@ -220,31 +227,32 @@
         }
 
         .dropbtn:hover {
-            background-color: #0056b3; /* Hover rengi */
+            background-color: #0056b3;
+            /* Hover rengi */
         }
 
         .dropdown-content.show {
             display: block;
         }
-
     </style>
 </head>
+
 <body>
 
 <!-- Kullanıcının rolünü saklayan gizli bir alan -->
-<input type="hidden" id="userRole" th:value="${role}"/>
+<input type="hidden" id="userRole" th:value="${role}" />
 
 <!-- Navbar -->
 <div class="navbar">
     <div>
         <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE' || role == 'ADMIN'}">Dashboard</a>
-        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT' || role == 'ADMIN'}"
+        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT'}"
            th:classappend="${isPreviewMode or isApplicationPeriod ? '' : 'disabled-link'}"
            th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
            onclick="return checkApplicationPeriod();">
             Başvuru Yap
         </a>
-        <a href="/applications/my-applications" th:if="${role == 'STUDENT' || role == 'ADMIN'}">Başvurularım</a>
+        <a href="/applications/my-applications" th:if="${role == 'STUDENT'}">Başvurularım</a>
         <a href="/applications/pending" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Bekleyen Başvurular</a>
         <a href="/applications/approved" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Onaylanan Başvurular</a>
         <a href="/applications/rejected" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Reddedilen Başvurular</a>
@@ -279,6 +287,7 @@
             <th>Dışarıdan Alınacak Ders</th>
             <th>Durum</th>
             <th>Başvuru Tarihi</th>
+            <th>Benzerlik Skoru</th>
             <th>Detaylar</th>
         </tr>
         </thead>
@@ -295,10 +304,12 @@
                 <span th:case="*">Bilinmiyor</span>
             </td>
             <td class="submission-date" th:text="${app.submissionDate}"></td>
+            <td
+                    th:text="${app.similarityScore != null ? T(java.lang.String).format('%.2f', app.similarityScore * 100) + ' %' : 'Hesaplanamadı'}">
+            </td>
             <td>
                 <button class="details-btn" onclick="showDetails(this)"
-                        th:data-application-id="${app.applicationId}"
-                        th:data-student-name="${app.student.name}"
+                        th:data-application-id="${app.applicationId}" th:data-student-name="${app.student.name}"
                         th:data-student-surname="${app.student.surname}"
                         th:data-student-number="${app.student.studentNumber}"
                         th:data-home-course="${app.homeCourse.courseName}"
@@ -312,7 +323,8 @@
                         th:data-external-faculty="${app.externalCourse.university.facultyName}"
                         th:data-external-department="${app.externalCourse.university.departmentName}"
                         th:data-external-university="${app.externalCourse.university.universityName}"
-                        th:data-submission-date="${app.submissionDate}">
+                        th:data-submission-date="${app.submissionDate}"
+                        th:data-similarity-score="${app.similarityScore}">
                     Detayları Göster
                 </button>
             </td>
@@ -384,6 +396,7 @@
         <!-- En Alta Alınan Bölümler -->
         <div class="bottom-container">
             <p><strong>Başvuru Tarihi:</strong> <span id="popupSubmissionDate"></span></p>
+            <p><strong>Benzerlik Skoru:</strong> <span id="popupSimilarityScore"></span></p>
 
             <div class="button-container">
                 <form id="rejectForm" method="post">
@@ -427,6 +440,9 @@
         const rawDate = button.getAttribute("data-submission-date");
         const formattedDate = formatToDayMonthYear(rawDate);
         document.getElementById("popupSubmissionDate").innerText = formattedDate;
+
+        // Benzerlik Skoru
+        document.getElementById("popupSimilarityScore").innerText = button.getAttribute("data-similarity-score") ? (parseFloat(button.getAttribute("data-similarity-score")) * 100).toFixed(2) + ' %' : 'Hesaplanamadı';
 
         // Reddetme Formu
         document.getElementById("rejectForm").action = "/applications/reject-approved/" + applicationId;
@@ -510,7 +526,7 @@
         return `${day}.${month}.${year}`;
     }
 
-    document.querySelectorAll('.submission-date').forEach(function(cell) {
+    document.querySelectorAll('.submission-date').forEach(function (cell) {
         const originalDate = cell.innerText.trim();
         if (originalDate && originalDate.includes('-')) {
             const [year, month, day] = originalDate.split("-");
@@ -525,4 +541,5 @@
 </script>
 
 </body>
+
 </html>

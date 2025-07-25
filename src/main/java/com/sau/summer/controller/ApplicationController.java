@@ -65,9 +65,11 @@ public class ApplicationController {
     }
 
     @GetMapping("/new")
-    public String showNewApplicationPage(final Model model, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String showNewApplicationPage(final Model model, final HttpSession session,
+                                         final RedirectAttributes redirectAttributes) {
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         Student student = (Student) session.getAttribute("student");
         String role = (String) session.getAttribute("role");
@@ -82,7 +84,8 @@ public class ApplicationController {
 
         if (!isPreviewMode && !isApplicationPeriod) {
             model.addAttribute("showErrorPopup", true);
-            model.addAttribute("errorMessage", "Başvurular şu anda kapalıdır. Lütfen belirlenen tarihlerde tekrar deneyin.");
+            model.addAttribute("errorMessage",
+                    "Başvurular şu anda kapalıdır. Lütfen belirlenen tarihlerde tekrar deneyin.");
             return "redirect:/dashboard";
         }
 
@@ -92,7 +95,8 @@ public class ApplicationController {
 
         final EducationYear maxAllowedYear;
         if (gpa >= 3.00) {
-            maxAllowedYear = EducationYear.values()[Math.min(studentYear.ordinal() + 1, EducationYear.values().length - 1)];
+            maxAllowedYear = EducationYear.values()[Math.min(studentYear.ordinal() + 1,
+                    EducationYear.values().length - 1)];
         } else {
             maxAllowedYear = studentYear;
         }
@@ -111,18 +115,22 @@ public class ApplicationController {
     }
 
     @PostMapping("/step2")
-    public String proceedToNextStep(final @RequestParam Long selectedCourseId, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String proceedToNextStep(final @RequestParam Long selectedCourseId, final HttpSession session,
+                                    final RedirectAttributes redirectAttributes) {
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         session.setAttribute("selectedHomeCourseId", selectedCourseId);
         return "redirect:/applications/new/2";
     }
 
     @GetMapping("/new/2")
-    public String showNewApplication2Page(final HttpSession session, final Model model, final RedirectAttributes redirectAttributes) {
+    public String showNewApplication2Page(final HttpSession session, final Model model,
+                                          final RedirectAttributes redirectAttributes) {
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         String role = (String) session.getAttribute("role");
         Long homeCourseId = (Long) session.getAttribute("selectedHomeCourseId");
@@ -138,7 +146,8 @@ public class ApplicationController {
 
         if (!isPreviewMode && !isApplicationPeriod) {
             model.addAttribute("showErrorPopup", true);
-            model.addAttribute("errorMessage", "Başvurular şu anda kapalıdır. Lütfen belirlenen tarihlerde tekrar deneyin.");
+            model.addAttribute("errorMessage",
+                    "Başvurular şu anda kapalıdır. Lütfen belirlenen tarihlerde tekrar deneyin.");
             return "redirect:/dashboard";
         }
 
@@ -153,10 +162,13 @@ public class ApplicationController {
 
     @GetMapping("/external-course-id")
     @ResponseBody
-    public Object getExternalCourseId(@RequestParam final String universityName, @RequestParam final String facultyName, @RequestParam final String departmentName,
-                                      @RequestParam final String courseName, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public Object getExternalCourseId(@RequestParam final String universityName, @RequestParam final String facultyName,
+                                      @RequestParam final String departmentName,
+                                      @RequestParam final String courseName, final HttpSession session,
+                                      final RedirectAttributes redirectAttributes) {
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         try {
             // 1. Adım: UniversityId'yi al
@@ -176,18 +188,22 @@ public class ApplicationController {
     }
 
     @PostMapping("/set-external-course")
-    public String setExternalCourseId(@RequestParam final Long externalCourseId, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String setExternalCourseId(@RequestParam final Long externalCourseId, final HttpSession session,
+                                      final RedirectAttributes redirectAttributes) {
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         session.setAttribute("selectedExternalCourseId", externalCourseId);
         return "redirect:/applications/confirmation";
     }
 
     @GetMapping("/confirmation")
-    public String showConfirmationPage(final HttpSession session, final Model model, final RedirectAttributes redirectAttributes) {
+    public String showConfirmationPage(final HttpSession session, final Model model,
+                                       final RedirectAttributes redirectAttributes) {
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         Student student = (Student) session.getAttribute("student");
         String role = (String) session.getAttribute("role");
@@ -198,7 +214,7 @@ public class ApplicationController {
 
         if (homeCourseId == null || externalCourseId == null) {
             model.addAttribute("errorMessage", "Gerekli veriler eksik. Lütfen işlemi tekrar başlatın.");
-            return "confirmation";  // Hata mesajıyla birlikte sayfayı göster
+            return "confirmation"; // Hata mesajıyla birlikte sayfayı göster
         }
 
         // HomeCourse ve ExternalCourse verilerini çek
@@ -212,7 +228,8 @@ public class ApplicationController {
 
         if (!isPreviewMode && !isApplicationPeriod) {
             model.addAttribute("showErrorPopup", true);
-            model.addAttribute("errorMessage", "Başvurular şu anda kapalıdır. Lütfen belirlenen tarihlerde tekrar deneyin.");
+            model.addAttribute("errorMessage",
+                    "Başvurular şu anda kapalıdır. Lütfen belirlenen tarihlerde tekrar deneyin.");
             return "redirect:/dashboard";
         }
 
@@ -223,16 +240,18 @@ public class ApplicationController {
         model.addAttribute("isPreviewMode", isPreviewMode);
         model.addAttribute("isApplicationPeriod", isApplicationPeriod);
         model.addAttribute("role", role);
-        model.addAttribute("user",student);
+        model.addAttribute("user", student);
 
         return "confirmation";
     }
 
     @PostMapping("/submit")
-    public String submitApplication(@RequestParam final Long homeCourseId, @RequestParam final Long externalCourseId, final Model model, final HttpSession session,
+    public String submitApplication(@RequestParam final Long homeCourseId, @RequestParam final Long externalCourseId,
+                                    final Model model, final HttpSession session,
                                     final RedirectAttributes redirectAttributes) {
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         Student student = (Student) session.getAttribute("student");
 
@@ -244,7 +263,8 @@ public class ApplicationController {
 
         // AKTS kontrolü
         if (externalCourse.getEcts() < homeCourse.getEcts()) {
-            model.addAttribute("errorMessage", "Dışarıdan alınacak dersin AKTS değeri, seçilen HomeCourse'un AKTS değerine eşit veya daha büyük olmalıdır.");
+            model.addAttribute("errorMessage",
+                    "Dışarıdan alınacak dersin AKTS değeri, seçilen HomeCourse'un AKTS değerine eşit veya daha büyük olmalıdır.");
             return "confirmation";
         }
 
@@ -254,6 +274,25 @@ public class ApplicationController {
             return "confirmation";
         }
 
+        // Call similarity service
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+        String url = System.getenv().getOrDefault("SIMILARITY_API_URL", "http://similarity:5001/similarity");
+        java.util.Map<String, String> request = java.util.Map.of(
+                "desc1", homeCourse.getDescription(),
+                "desc2", externalCourse.getDescription());
+        Double similarityScore = null;
+        try {
+            org.springframework.http.ResponseEntity<java.util.Map> response = restTemplate.postForEntity(url, request,
+                    java.util.Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null
+                    && response.getBody().get("average_similarity") != null) {
+                similarityScore = Double.valueOf(response.getBody().get("average_similarity").toString());
+            }
+        } catch (Exception e) {
+            // Optionally log the error
+            similarityScore = null;
+        }
+
         // Yeni bir Application oluştur
         Application application = new Application();
         application.setHomeCourse(homeCourse);
@@ -261,6 +300,7 @@ public class ApplicationController {
         application.setStudent(student);
         application.setStatus(ApplicationStatus.PENDING);
         application.setSubmissionDate(LocalDate.now());
+        application.setSimilarityScore(similarityScore);
 
         // Application'ı kaydet
         applicationRepo.save(application);
@@ -270,9 +310,11 @@ public class ApplicationController {
     }
 
     @GetMapping("/my-applications")
-    public String getMyApplications(final HttpSession session, final Model model, final RedirectAttributes redirectAttributes) {
+    public String getMyApplications(final HttpSession session, final Model model,
+                                    final RedirectAttributes redirectAttributes) {
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         Student student = (Student) session.getAttribute("student");
 
@@ -294,9 +336,11 @@ public class ApplicationController {
     }
 
     @GetMapping("/pending")
-    public String getPendingApplications(final Model model, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String getPendingApplications(final Model model, final HttpSession session,
+                                         final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         String role = (String) session.getAttribute("role");
         Committee committee = (Committee) session.getAttribute("committee");
@@ -317,9 +361,11 @@ public class ApplicationController {
     }
 
     @GetMapping("/approved")
-    public String approvedApplications(final Model model, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String approvedApplications(final Model model, final HttpSession session,
+                                       final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         String role = (String) session.getAttribute("role");
         Committee committee = (Committee) session.getAttribute("committee");
@@ -338,9 +384,11 @@ public class ApplicationController {
     }
 
     @PostMapping("/approve/{id}")
-    public String approveApplication(@PathVariable Long id, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String approveApplication(@PathVariable Long id, final HttpSession session,
+                                     final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         Application application = applicationRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Başvuru bulunamadı!"));
@@ -352,9 +400,11 @@ public class ApplicationController {
     }
 
     @GetMapping("/rejected")
-    public String rejectedApplications(final Model model, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String rejectedApplications(final Model model, final HttpSession session,
+                                       final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         String role = (String) session.getAttribute("role");
         Committee committee = (Committee) session.getAttribute("committee");
@@ -373,9 +423,11 @@ public class ApplicationController {
     }
 
     @PostMapping("/reject/{id}")
-    public String rejectApplication(@PathVariable Long id, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String rejectApplication(@PathVariable Long id, final HttpSession session,
+                                    final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         Application application = applicationRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Başvuru bulunamadı!"));
@@ -387,12 +439,15 @@ public class ApplicationController {
     }
 
     @PostMapping("/cancel/{id}")
-    public String cancelApplication(final @PathVariable Long id, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String cancelApplication(final @PathVariable Long id, final HttpSession session,
+                                    final RedirectAttributes redirectAttributes) {
 
         String redirect = checkStudentAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
-        Application application = applicationRepo.findById(id).orElseThrow(() -> new RuntimeException("Başvuru bulunamadı!"));
+        Application application = applicationRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Başvuru bulunamadı!"));
 
         Student student = (Student) session.getAttribute("student");
 
@@ -402,7 +457,8 @@ public class ApplicationController {
         }
 
         // Başvuru zaten onaylandı veya reddedildiyse iptal edilemez
-        if (application.getStatus() == ApplicationStatus.APPROVED || application.getStatus() == ApplicationStatus.REJECTED) {
+        if (application.getStatus() == ApplicationStatus.APPROVED
+                || application.getStatus() == ApplicationStatus.REJECTED) {
             throw new RuntimeException("Onaylanmış veya reddedilmiş başvurular iptal edilemez!");
         }
 
@@ -413,9 +469,11 @@ public class ApplicationController {
     }
 
     @PostMapping("/reject-approved/{id}")
-    public String rejectApprovedApplication(@PathVariable Long id, final HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String rejectApprovedApplication(@PathVariable Long id, final HttpSession session,
+                                            final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         Application application = applicationRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Başvuru bulunamadı!"));
@@ -429,9 +487,11 @@ public class ApplicationController {
     }
 
     @PostMapping("/approve-rejected/{id}")
-    public String approveRejectedApplication(@PathVariable Long id, final HttpSession session, final Model model, final RedirectAttributes redirectAttributes) {
+    public String approveRejectedApplication(@PathVariable Long id, final HttpSession session, final Model model,
+                                             final RedirectAttributes redirectAttributes) {
         String redirect = checkCommitteeAccess(session, redirectAttributes);
-        if (redirect != null) return redirect;
+        if (redirect != null)
+            return redirect;
 
         Application application = applicationRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Başvuru bulunamadı!"));
@@ -445,6 +505,19 @@ public class ApplicationController {
         application.setStatus(ApplicationStatus.APPROVED);
         applicationRepo.save(application);
 
-        return "redirect:/applications/rejected"; //Reddedilen başvurular sayfasına geri dön
+        return "redirect:/applications/rejected"; // Reddedilen başvurular sayfasına geri dön
+    }
+
+    @PostMapping("/similarity")
+    @ResponseBody
+    public Object compareCourseDescriptions(@RequestBody java.util.Map<String, String> payload) {
+        String desc1 = payload.get("desc1");
+        String desc2 = payload.get("desc2");
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+        String url = System.getenv().getOrDefault("SIMILARITY_API_URL", "http://similarity:5001/similarity");
+        java.util.Map<String, String> request = java.util.Map.of("desc1", desc1, "desc2", desc2);
+        org.springframework.http.ResponseEntity<Object> response = restTemplate.postForEntity(url, request,
+                Object.class);
+        return response.getBody();
     }
 }

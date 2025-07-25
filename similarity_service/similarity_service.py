@@ -3,7 +3,7 @@ from sentence_transformers import SentenceTransformer, util
 import torch
 
 app = Flask(__name__)
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 
 @app.route('/similarity', methods=['POST'])
 def similarity():
@@ -37,4 +37,4 @@ def similarity():
     })
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run(host="0.0.0.0", port=5001)

@@ -103,13 +103,13 @@
 <div class="navbar">
     <div>
         <a href="/dashboard" th:if="${role == 'STUDENT' || role == 'COMMITTEE' || role == 'ADMIN'}">Dashboard</a>
-        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT' || role == 'ADMIN'}"
+        <a href="/applications/new" id="applyButton" th:if="${role == 'STUDENT'}"
            th:classappend="${isPreviewMode == true or isApplicationPeriod == true ? '' : 'disabled-link'}"
            th:data-preview-mode="${isPreviewMode}" th:data-application-period="${isApplicationPeriod}"
            onclick="return checkApplicationPeriod();">
             Başvuru Yap
         </a>
-        <a href="/applications/my-applications" th:if="${role == 'STUDENT' || role == 'ADMIN'}">Başvurularım</a>
+        <a href="/applications/my-applications" th:if="${role == 'STUDENT'}">Başvurularım</a>
         <a href="/applications/pending" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Bekleyen Başvurular</a>
         <a href="/applications/approved" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Onaylanan Başvurular</a>
         <a href="/applications/rejected" th:if="${role == 'COMMITTEE' || role == 'ADMIN'}">Reddedilen Başvurular</a>

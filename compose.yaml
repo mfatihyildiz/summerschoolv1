@@ -1,43 +1,43 @@
-version: "3"
+version: "3.8"
 
 services:
-  postgres:
-    container_name: 'postgresummer'
-    image: 'postgres:latest'
+  similarity:
+    build: ./similarity_service
+    container_name: similarity
     ports:
-      - '5433:5432'
-    environment:
-      POSTGRES_DB: 'summerdb'
-      POSTGRES_PASSWORD: 'ss2025%'
-      POSTGRES_USER: 'ozmen'
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - "5001:5001"
     networks:
-      - 'ssnet'
+      - ssnet
+
+  db:
+    image: postgres:15
+    container_name: summer-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bitirmedb
+    ports:
+      - "5432:5432"
+    networks:
+      - ssnet
 
   web:
-    container_name: 'summer'
-    image: 'aozmen54/summer'
-    restart: 'always'
     build: .
-
+    container_name: summer
     ports:
-      - '8090:8090'
+      - "8080:8080"
     environment:
-      POSTGRES_HOST: 'postgres'
-      POSTGRES_USER: 'ozmen'
-      POSTGRES_PASSWORD: 'ss2025%'
-      POSTGRES_PORT: '5432'
-      POSTGRES_DB: 'summerdb'
-
-    networks:
-      - 'ssnet'
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bitirmedb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SIMILARITY_API_URL: http://similarity:5001/similarity
     depends_on:
-      - 'postgres'
+      - similarity
+      - db
+    networks:
+      - ssnet
 
 networks:
   ssnet:
-    external: true
-
-volumes:
-  postgres-data:
+    driver: bridge
